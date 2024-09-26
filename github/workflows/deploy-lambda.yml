@@ -1,4 +1,4 @@
-name: Deploy Lambda Function
+name: Deploy Lambda Functions
 
 on:
   push:
@@ -20,34 +20,30 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ us-west-2}}
+          aws-region: us-west-2  # You can also use ${{ secrets.AWS_REGION }}
 
-      # Step 3: Install dependencies (if needed)
-      - name: Install dependencies
-        run: npm install
-
-      # Step 4: Deploy Lambda function CalculatorTest code to AWS
+      # Step 3: Zip and deploy Lambda function CalculatorTest
       - name: Deploy Lambda function CalculatorTest
         run: |
           zip -r function.zip .
           aws lambda update-function-code \
             --function-name CalculatorTest \
-            --zip-file fileb://CalculatorTest.zip
+            --zip-file fileb://function.zip
 
-         # Deploy Lambda function count_update_calculator
+      # Step 4: Zip and deploy Lambda function count_update_calculator
       - name: Deploy Lambda function count_update_calculator
         run: |
-          cd lambda-function-b-directory
+          cd lambda-function-b-directory  # Change to the correct directory
           zip -r functionB.zip .
           aws lambda update-function-code \
             --function-name count_update_calculator \
-            --zip-file fileb://count_update_calculator.zip
+            --zip-file fileb://functionB.zip
 
-           # Deploy Lambda function Scan_and_sum_Dynamo1
-      - name: Deploy Lambda Scan_and_sum_Dynamo1
+      # Step 5: Zip and deploy Lambda function Scan_and_sum_Dynamo1
+      - name: Deploy Lambda function Scan_and_sum_Dynamo1
         run: |
-          cd lambda-function-b-directory
+          cd lambda-function-b-directory  # Change to the correct directory
           zip -r functionB.zip .
           aws lambda update-function-code \
             --function-name Scan_and_sum_Dynamo1 \
-            --zip-file fileb://Scan_and_sum_Dynamo1.zip
+            --zip-file fileb://functionB.zip
