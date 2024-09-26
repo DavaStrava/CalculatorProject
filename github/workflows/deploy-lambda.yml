@@ -33,16 +33,14 @@ jobs:
       # Step 4: Zip and deploy Lambda function count_update_calculator
       - name: Deploy Lambda function count_update_calculator
         run: |
-          cd lambda-function-b-directory  # Change to the correct directory
-          zip -r functionB.zip .
+          zip -r functionA.zip .
           aws lambda update-function-code \
             --function-name count_update_calculator \
-            --zip-file fileb://functionB.zip
+            --zip-file fileb://functionA.zip
 
       # Step 5: Zip and deploy Lambda function Scan_and_sum_Dynamo1
       - name: Deploy Lambda function Scan_and_sum_Dynamo1
         run: |
-          cd lambda-function-b-directory  # Change to the correct directory
           zip -r functionB.zip .
           aws lambda update-function-code \
             --function-name Scan_and_sum_Dynamo1 \
