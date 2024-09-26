@@ -32,7 +32,7 @@ jobs:
           zip -r function.zip .
           aws lambda update-function-code \
             --function-name CalculatorTest \
-            --zip-file fileb://function.zip
+            --zip-file fileb://CalculatorTest.zip
 
          # Deploy Lambda function count_update_calculator
       - name: Deploy Lambda function count_update_calculator
@@ -41,7 +41,7 @@ jobs:
           zip -r functionB.zip .
           aws lambda update-function-code \
             --function-name count_update_calculator \
-            --zip-file fileb://functionB.zip
+            --zip-file fileb://count_update_calculator.zip
 
            # Deploy Lambda function Scan_and_sum_Dynamo1
       - name: Deploy Lambda Scan_and_sum_Dynamo1
@@ -50,4 +50,4 @@ jobs:
           zip -r functionB.zip .
           aws lambda update-function-code \
             --function-name Scan_and_sum_Dynamo1 \
-            --zip-file fileb://functionB.zip
+            --zip-file fileb://Scan_and_sum_Dynamo1.zip
