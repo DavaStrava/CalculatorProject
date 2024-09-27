@@ -44,7 +44,7 @@ jobs:
       - name: Deploy Scan_and_sum_Dynamo1 Lambda function
         run: |
           cd lambda-functions/scan-sum       # Navigate to scan-sum directory
-          zip -r ../scan_sum_function.zip .  # Zip only the contents, excluding the directory itself
+          zip -r ../Scan_and_sum_Dynamo1.zip .  # Zip only the contents, excluding the directory itself
           aws lambda update-function-code \
             --function-name Scan_and_sum_Dynamo1 \
-            --zip-file fileb://../scan_sum_function.zip
+            --zip-file fileb://../Scan_and_sum_Dynamo1.zip
