@@ -14,37 +14,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up AWS credentials with a hardcoded region
+      # Step 2: Set up AWS credentials
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2  # Using v2 instead of v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }} 
-
-      # Step 3: Zip and deploy the CalculatorTest Lambda function
+          
+      # Step 3: Zip and deploy CalculatorTest Lambda function
       - name: Deploy CalculatorTest Lambda function
         run: |
-          zip -r calculator.zip .
+          cd lambda-functions/calculator  # Navigate to the calculator directory
+          zip -r ../calculator.zip .      # Zip only the contents, excluding the directory itself
           aws lambda update-function-code \
             --function-name CalculatorTest \
-            --zip-file fileb://calculator.zip
+            --zip-file fileb://../calculator.zip  # Go back up one level to access the zip
 
-      # Step 4: Zip and deploy the count_update_calculator Lambda function
+      # Step 4: Zip and deploy count_update_calculator Lambda function
       - name: Deploy count_update_calculator Lambda function
         run: |
-          zip -r count_update.zip .
+          cd lambda-functions/count-update  # Navigate to count-update directory
+          zip -r ../count_update.zip .      # Zip only the contents, excluding the directory itself
           aws lambda update-function-code \
             --function-name count_update_calculator \
-            --zip-file fileb://count_update.zip
+            --zip-file fileb://../count_update.zip
 
-      # Step 5: Zip and deploy the Scan_and_sum_Dynamo1 Lambda function
+      # Step 5: Zip and deploy Scan_and_sum_Dynamo1 Lambda function
       - name: Deploy Scan_and_sum_Dynamo1 Lambda function
         run: |
-          zip -r scan_sum_function.zip .
+          cd lambda-functions/scan-sum       # Navigate to scan-sum directory
+          zip -r ../scan_sum_function.zip .  # Zip only the contents, excluding the directory itself
           aws lambda update-function-code \
             --function-name Scan_and_sum_Dynamo1 \
-            --zip-file fileb://scan_sum_function.zip
-            
-      - name: Debug Environment Variables
-        run: env | sort
+            --zip-file fileb://../scan_sum_function.zip
