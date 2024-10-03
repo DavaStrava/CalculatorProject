@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Replace with your actual API Gateway URL
-    const apiUrl = 'https://927lg8a0al.execute-api.us-west-2.amazonaws.com/v1/Scan_and_sum_Dynamo1'; 
+    const apiUrl = 'https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/UpdateWebsite'; 
 
     // Fetch the total number of calculations
     fetch(apiUrl)
