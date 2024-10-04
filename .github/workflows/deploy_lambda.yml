@@ -1,4 +1,4 @@
-name: Deploy Lambda Functions and S3 Assets
+name: Deploy Lambda Functions
 
 on:
   push:
@@ -20,39 +20,32 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2  # Specify the region
+          aws-region: us-west-2  # Specify your region
 
-      # Step 3: Zip and deploy the CalculatorTest Lambda function
+      # Step 3: Deploy only the relevant file for the CalculatorTest Lambda function
       - name: Deploy CalculatorTest Lambda function
         run: |
-          zip -r calculator.zip .
+          zip calculator.zip calculator.py  # Zip only the calculator.py file
           aws lambda update-function-code \
             --function-name CalculatorTest \
             --zip-file fileb://calculator.zip
 
-      # Step 4: Zip and deploy the count_update_calculator Lambda function
+      # Step 4: Deploy only the relevant file for the count_update_calculator Lambda function
       - name: Deploy count_update_calculator Lambda function
         run: |
-          zip -r count_update.zip .
+          zip count_update.zip count_update.py  # Zip only the count_update.py file
           aws lambda update-function-code \
             --function-name count_update_calculator \
             --zip-file fileb://count_update.zip
 
-      # Step 5: Zip and deploy the UpdateWebsite Lambda function
+      # Step 5: Deploy only the relevant file for the UpdateWebsite Lambda function
       - name: Deploy UpdateWebsite Lambda function
         run: |
-          zip -r update_website.zip .
+          zip update_website.zip update_website.py  # Zip only the update_website.py file
           aws lambda update-function-code \
             --function-name UpdateWebsite \
             --zip-file fileb://update_website.zip
 
-      # Step 6: Upload static files to S3
-      - name: Sync files to S3
-        run: |
-          aws s3 sync ./s3-files s3://xaiproject.net --delete
-
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-west-2
-
+      # Optional: Debug environment variables
+      - name: Debug Environment Variables
+        run: env | sort
