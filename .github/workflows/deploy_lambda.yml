@@ -3,7 +3,7 @@ name: Deploy Lambda Functions
 on:
   push:
     branches:
-      - main
+      - main  # Triggers the workflow on pushes to the main branch
 
 jobs:
   deploy:
@@ -20,31 +20,37 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }} 
-          
-      # Step 3: Zip and deploy CalculatorTest Lambda function
+          aws-region: us-west-2
+
+      # Step 3: Zip and deploy the CalculatorTest Lambda function
       - name: Deploy CalculatorTest Lambda function
         run: |
-          cd lambda-functions/calculator  # Navigate to the calculator directory
-          zip -r ../calculator.zip .      # Zip only the contents, excluding the directory itself
+          cd lambda-functions/calculator
+          zip -r ../calculator.zip .
           aws lambda update-function-code \
             --function-name CalculatorTest \
-            --zip-file fileb://../calculator.zip  # Go back up one level to access the zip
+            --zip-file fileb://../calculator.zip
 
-      # Step 4: Zip and deploy count_update_calculator Lambda function
+      # Step 4: Zip and deploy the count_update_calculator Lambda function
       - name: Deploy count_update_calculator Lambda function
         run: |
-          cd lambda-functions/count-update  # Navigate to count-update directory
-          zip -r ../count_update.zip .      # Zip only the contents, excluding the directory itself
+          cd lambda-functions/count-update
+          zip -r ../count_update.zip .
           aws lambda update-function-code \
             --function-name count_update_calculator \
             --zip-file fileb://../count_update.zip
 
-      # Step 5: Zip and deploy Scan_and_sum_Dynamo1 Lambda function
-      - name: Deploy Scan_and_sum_Dynamo1 Lambda function
+      # Step 5: Zip and deploy the UpdateWebsite Lambda function (new function)
+      - name: Deploy UpdateWebsite Lambda function
         run: |
-          cd lambda-functions/scan-sum       # Navigate to scan-sum directory
-          zip -r ../Scan_and_sum_Dynamo1.zip .  # Zip only the contents, excluding the directory itself
+          cd lambda-functions/update-website  # Navigate to the UpdateWebsite code
+          zip -r ../update_website.zip .
           aws lambda update-function-code \
-            --function-name Scan_and_sum_Dynamo1 \
-            --zip-file fileb://../Scan_and_sum_Dynamo1.zip
+            --function-name UpdateWebsite \
+            --zip-file fileb://../update_website.zip
+
+      # Step 6: Optionally, remove the Scan_and_sum_Dynamo1 Lambda function
+      - name: Remove Scan_and_sum_Dynamo1 Lambda function
+        run: |
+          aws lambda delete-function \
+            --function-name Scan_and_sum_Dynamo1
