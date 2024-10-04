@@ -50,7 +50,7 @@ jobs:
             --zip-file fileb://../update_website.zip
 
       # Step 6: Optionally, remove the Scan_and_sum_Dynamo1 Lambda function
-      - name: Remove Scan_and_sum_Dynamo1 Lambda function
-        run: |
-          aws lambda delete-function \
-            --function-name Scan_and_sum_Dynamo1
+      #- name: Remove Scan_and_sum_Dynamo1 Lambda function
+       # run: |
+        #  aws lambda delete-function \
+         #   --function-name Scan_and_sum_Dynamo1
