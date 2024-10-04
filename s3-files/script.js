@@ -47,7 +47,7 @@ function calculate() {
             return;
     }
 
-    fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/v1/CalculatorTest', {
+    fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/CalculatorTest', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
