@@ -53,6 +53,7 @@ def lambda_handler(event, context):
         # Trigger count_update Lambda asynchronously
         trigger_count_update_lambda(num1, num2, operation)
 
+        # Return a successful response with CORS headers
         return api_response(200, {'result': result})
 
     except Exception as e:
@@ -76,12 +77,16 @@ def perform_calculation(operation, num1, num2):
     else:
         raise ValueError(f"Unknown operation: {operation}")
 
-# Helper function for API response
+# Helper function for API response with CORS headers
 def api_response(status_code, body):
     return {
         'statusCode': status_code,
         'body': json.dumps(body),
         'headers': {
             'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'http://xaiproject.net',  # Add your domain here
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',    # Allowed methods
+            'Access-Control-Allow-Headers': '*',                    # Allowed headers
+            'Access-Control-Allow-Credentials': 'true'              # Credentials support
         },
     }
