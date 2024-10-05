@@ -25,26 +25,29 @@ jobs:
       # Step 3: Deploy only the relevant file for the CalculatorTest Lambda function
       - name: Deploy CalculatorTest Lambda function
         run: |
-          zip calculator.zip calculator.py  # Zip only the calculator.py file
+          cd lambda-functions/calculator  # Navigate to the correct directory
+          zip ../calculator.zip calculator.py  # Zip only the calculator.py file
           aws lambda update-function-code \
             --function-name CalculatorTest \
-            --zip-file fileb://calculator.zip
+            --zip-file fileb://../calculator.zip
 
       # Step 4: Deploy only the relevant file for the count_update_calculator Lambda function
       - name: Deploy count_update_calculator Lambda function
         run: |
-          zip count_update.zip count_update.py  # Zip only the count_update.py file
+          cd lambda-functions/count-update  # Navigate to the correct directory
+          zip ../count_update.zip count_update.py  # Zip only the count_update.py file
           aws lambda update-function-code \
             --function-name count_update_calculator \
-            --zip-file fileb://count_update.zip
+            --zip-file fileb://../count_update.zip
 
       # Step 5: Deploy only the relevant file for the UpdateWebsite Lambda function
       - name: Deploy UpdateWebsite Lambda function
         run: |
-          zip update_website.zip update_website.py  # Zip only the update_website.py file
+          cd lambda-functions/update-website  # Navigate to the correct directory
+          zip ../update_website.zip update_website.py  # Zip only the update_website.py file
           aws lambda update-function-code \
             --function-name UpdateWebsite \
-            --zip-file fileb://update_website.zip
+            --zip-file fileb://../update_website.zip
 
       # Optional: Debug environment variables
       - name: Debug Environment Variables
