@@ -19,13 +19,14 @@ body {
     padding: 20px;
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr); /* 4 buttons per row */
+    grid-auto-rows: 60px; /* Ensures all buttons have the same height */
     gap: 10px;
     width: 360px;
 }
 
 .calculator input {
-    grid-column: span 4;
+    grid-column: span 4; /* Input spans all 4 columns */
     height: 60px;
     text-align: right;
     font-size: 28px;
@@ -39,7 +40,6 @@ body {
 
 .calculator button {
     width: 100%;
-    height: 60px;
     font-size: 22px;
     border: none;
     background-color: #4285f4;
@@ -55,12 +55,12 @@ body {
 }
 
 .calculator button.zero {
-    grid-column: span 2;
+    grid-column: span 2; /* Zero button spans two columns */
 }
 
 .calculator button.celsius,
 .calculator button.fahrenheit {
-    grid-column: span 2;
+    grid-column: span 2; /* Celsius and Fahrenheit buttons span two columns */
     background-color: #34a853;
 }
 
