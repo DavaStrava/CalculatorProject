@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Calculator</title>
+    <title>Advanced Calculator</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,24 +14,37 @@
             <button onclick="appendDisplay('/')">/</button>
             <button onclick="appendDisplay('*')">*</button>
             <button onclick="backspace()">←</button>
+
             <button onclick="appendDisplay('7')">7</button>
             <button onclick="appendDisplay('8')">8</button>
             <button onclick="appendDisplay('9')">9</button>
             <button onclick="appendDisplay('-')">-</button>
+
             <button onclick="appendDisplay('4')">4</button>
             <button onclick="appendDisplay('5')">5</button>
             <button onclick="appendDisplay('6')">6</button>
             <button onclick="appendDisplay('+')">+</button>
+
             <button onclick="appendDisplay('1')">1</button>
             <button onclick="appendDisplay('2')">2</button>
             <button onclick="appendDisplay('3')">3</button>
             <button onclick="calculate()">=</button>
+
             <button onclick="appendDisplay('0')" class="zero">0</button>
             <button onclick="appendDisplay('.')">.</button>
+
+            <!-- Advanced operation buttons -->
+            <button onclick="advancedOperation('sqrt')">√</button>
+            <button onclick="advancedOperation('power')">^</button>
+            <button onclick="advancedOperation('sin')">sin</button>
+            <button onclick="advancedOperation('cos')">cos</button>
+            <button onclick="advancedOperation('tan')">tan</button>
+
+            <!-- Temperature conversion buttons -->
+            <button onclick="celsiusToFahrenheit()">Celsius to Fahrenheit</button>
+            <button onclick="fahrenheitToCelsius()">Fahrenheit to Celsius</button>
         </div>
     </div>
-    <!-- Add this div to display the calculation count -->
-<div id="calculation-count" class="calculation-count">Loading total calculations...</div>
     <script src="script.js"></script>
     <script src="stats.js"></script>
 </body>
