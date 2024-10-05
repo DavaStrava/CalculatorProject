@@ -22,7 +22,7 @@ def trigger_count_update_lambda(num1, num2, operation):
     try:
         # Replace with your actual count_update Lambda function name
         response = lambda_client.invoke(
-            FunctionName='arn:aws:lambda:us-west-2:737630435491:function:count_update_calculator',  # Replace with actual function name
+            FunctionName='arn:aws:lambda:us-west-2:737630435491:function:count_update_calculator', 
             InvocationType='Event',  # Asynchronous invocation
             Payload=json.dumps(event)
         )
@@ -74,6 +74,13 @@ def perform_calculation(operation, num1, num2):
         return num1 / num2
     elif operation == 'sqrt':
         return math.sqrt(num1)
+    
+    # New: Temperature Conversion Functions
+    elif operation == 'celsius_to_fahrenheit':
+        return (num1 * 9 / 5) + 32  # Celsius to Fahrenheit
+    elif operation == 'fahrenheit_to_celsius':
+        return (num1 - 32) * 5 / 9  # Fahrenheit to Celsius
+    
     else:
         raise ValueError(f"Unknown operation: {operation}")
 
