@@ -72,3 +72,25 @@ function calculate() {
         console.error('Error:', error);
     });
 }
+
+// Celsius to Fahrenheit conversion
+function celsiusToFahrenheit() {
+    const celsius = parseFloat(display.value);
+    if (isNaN(celsius)) {
+        display.value = "Error";
+        return;
+    }
+    const fahrenheit = (celsius * 9 / 5) + 32;
+    display.value = fahrenheit;
+}
+
+// Fahrenheit to Celsius conversion
+function fahrenheitToCelsius() {
+    const fahrenheit = parseFloat(display.value);
+    if (isNaN(fahrenheit)) {
+        display.value = "Error";
+        return;
+    }
+    const celsius = (fahrenheit - 32) * 5 / 9;
+    display.value = celsius;
+}
