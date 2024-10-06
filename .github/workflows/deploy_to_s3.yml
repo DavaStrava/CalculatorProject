@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main  # Run this action on pushes to the main branch
+    paths:
+      - 's3-files/**'  # Trigger only when files in the s3-files directory change
 
 jobs:
   deploy:
