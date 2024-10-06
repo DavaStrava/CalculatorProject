@@ -25,4 +25,4 @@ jobs:
       # Step 3: Sync the entire directory to S3, updating only changed files
       - name: Sync S3 Files
         run: |
-          aws s3 sync CalculatorProject/s3-files/ s3://xaiproject.net/ --exclude ".git/*" --delete
+          aws s3 sync s3-files/ s3://xaiproject.net/ --exclude ".git/*" --delete
