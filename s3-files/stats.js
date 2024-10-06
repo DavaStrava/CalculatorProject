@@ -14,3 +14,4 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('calculation-count').textContent = 'Error loading calculation count.';
         });
 });
+// comment to test github actions
