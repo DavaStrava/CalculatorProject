@@ -12,17 +12,18 @@ lambda_client = boto3.client('lambda')
 
 # Helper function to trigger the Count Update Lambda asynchronously
 def trigger_count_update_lambda(num1, num2, operation):
-    # Event payload
+    # Build the event payload with only num1 and operation if num2 is None
     event = {
         'num1': num1,
-        'num2': num2,
         'operation': operation
     }
+    if num2 is not None:
+        event['num2'] = num2
 
     try:
-        # Replace with your actual count_update Lambda function name
+        # Invoke the count update Lambda function
         response = lambda_client.invoke(
-            FunctionName='arn:aws:lambda:us-west-2:737630435491:function:count_update_calculator', 
+            FunctionName='arn:aws:lambda:us-west-2:737630435491:function:count_update_calculator',
             InvocationType='Event',  # Asynchronous invocation
             Payload=json.dumps(event)
         )
@@ -74,13 +75,23 @@ def perform_calculation(operation, num1, num2):
         return num1 / num2
     elif operation == 'sqrt':
         return math.sqrt(num1)
+    elif operation == 'power':
+        if num2 is None:
+            raise ValueError('Power operation requires two operands')
+        return math.pow(num1, num2)
+    elif operation == 'sin':
+        return math.sin(math.radians(num1))
+    elif operation == 'cos':
+        return math.cos(math.radians(num1))
+    elif operation == 'tan':
+        return math.tan(math.radians(num1))
     
-    # New: Temperature Conversion Functions
+    # Temperature conversions
     elif operation == 'celsius_to_fahrenheit':
-        return (num1 * 9 / 5) + 32  # Celsius to Fahrenheit
+        return (num1 * 9 / 5) + 32
     elif operation == 'fahrenheit_to_celsius':
-        return (num1 - 32) * 5 / 9  # Fahrenheit to Celsius
-    
+        return (num1 - 32) * 5 / 9
+
     else:
         raise ValueError(f"Unknown operation: {operation}")
 
