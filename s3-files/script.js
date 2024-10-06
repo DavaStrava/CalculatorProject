@@ -14,7 +14,7 @@ function backspace() {
 
 function calculate() {
     const expression = display.value;
-    
+
     // Regular expression to capture num1, operator, and num2
     const match = expression.match(/(\d+\.?\d*)([\+\-\*\/])(\d+\.?\d*)?/);
     
@@ -73,24 +73,106 @@ function calculate() {
     });
 }
 
-// Celsius to Fahrenheit conversion
+// Advanced Operations
+function advancedOperation(operation) {
+    const num1 = parseFloat(display.value);
+    if (isNaN(num1)) {
+        display.value = "Error";
+        return;
+    }
+
+    fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/CalculatorTest', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            "operation": operation,
+            "num1": num1,
+            "num2": null
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not OK');
+        }
+        return response.json();
+    })
+    .then(data => {
+        display.value = data.result;
+    })
+    .catch(error => {
+        display.value = "Error";
+        console.error('Error:', error);
+    });
+}
+
+// Celsius to Fahrenheit conversion (backend)
 function celsiusToFahrenheit() {
     const celsius = parseFloat(display.value);
     if (isNaN(celsius)) {
         display.value = "Error";
         return;
     }
-    const fahrenheit = (celsius * 9 / 5) + 32;
-    display.value = fahrenheit;
+
+    // Send the conversion request to the backend
+    fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/CalculatorTest', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            "operation": "celsius_to_fahrenheit",
+            "num1": celsius,
+            "num2": null
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not OK');
+        }
+        return response.json();
+    })
+    .then(data => {
+        display.value = data.result;
+    })
+    .catch(error => {
+        display.value = "Error";
+        console.error('Error:', error);
+    });
 }
 
-// Fahrenheit to Celsius conversion
+// Fahrenheit to Celsius conversion (backend)
 function fahrenheitToCelsius() {
     const fahrenheit = parseFloat(display.value);
     if (isNaN(fahrenheit)) {
         display.value = "Error";
         return;
     }
-    const celsius = (fahrenheit - 32) * 5 / 9;
-    display.value = celsius;
+
+    // Send the conversion request to the backend
+    fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/CalculatorTest', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            "operation": "fahrenheit_to_celsius",
+            "num1": fahrenheit,
+            "num2": null
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not OK');
+        }
+        return response.json();
+    })
+    .then(data => {
+        display.value = data.result;
+    })
+    .catch(error => {
+        display.value = "Error";
+        console.error('Error:', error);
+    });
 }
