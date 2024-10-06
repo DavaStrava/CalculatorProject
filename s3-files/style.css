@@ -38,7 +38,7 @@ body {
 
 .buttons {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr); /* 4 buttons per row */
     gap: 10px;
 }
 
@@ -60,12 +60,12 @@ body {
 }
 
 .calculator button.zero {
-    grid-column: span 2;
+    grid-column: span 2; /* Zero button spans two columns */
 }
 
 .calculator button[onclick^="celsiusToFahrenheit"],
 .calculator button[onclick^="fahrenheitToCelsius"] {
-    grid-column: span 2;
+    grid-column: span 2; /* Celsius and Fahrenheit buttons span two columns */
     background-color: #34a853;
 }
 
