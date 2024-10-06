@@ -82,4 +82,77 @@ function advancedOperation(operation) {
     const num1 = parseFloat(display.value);
     if (isNaN(num1)) {
         display.value = "Error";
-        retur
+        return;
+    }
+
+    let num2 = null;
+
+    // Handle the power operation that requires two inputs
+    if (operation === 'power') {
+        num2 = parseFloat(prompt("Enter the exponent:"));
+        if (isNaN(num2)) {
+            display.value = "Error";
+            return;
+        }
+    }
+
+    fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/CalculatorTest', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            "operation": operation,
+            "num1": num1,
+            "num2": num2  // num2 is null for sqrt, sin, cos, tan, unless it's a power operation
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not OK');
+        }
+        return response.json();
+    })
+    .then(data => {
+        display.value = data.result;
+    })
+    .catch(error => {
+        display.value = "Error";
+        console.error('Error:', error);
+    });
+}
+
+// Celsius to Fahrenheit conversion
+function celsiusToFahrenheit() {
+    advancedOperation('celsius_to_fahrenheit');
+}
+
+// Fahrenheit to Celsius conversion
+function fahrenheitToCelsius() {
+    advancedOperation('fahrenheit_to_celsius');
+}
+
+// Square root operation
+function squareRoot() {
+    advancedOperation('sqrt');
+}
+
+// Sine operation
+function sine() {
+    advancedOperation('sin');
+}
+
+// Cosine operation
+function cosine() {
+    advancedOperation('cos');
+}
+
+// Tangent operation
+function tangent() {
+    advancedOperation('tan');
+}
+
+// Power operation
+function power() {
+    advancedOperation('power');
+}
