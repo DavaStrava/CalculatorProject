@@ -8,9 +8,10 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     background-color: #f0f0f0;
     font-family: 'Roboto', sans-serif;
+    flex-direction: column;
 }
 
 .calculator {
@@ -18,15 +19,11 @@ body {
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 buttons per row */
-    grid-auto-rows: 60px; /* Ensures all buttons have the same height */
-    gap: 10px;
     width: 360px;
 }
 
 .calculator input {
-    grid-column: span 4; /* Input spans all 4 columns */
+    width: 100%;
     height: 60px;
     text-align: right;
     font-size: 28px;
@@ -36,10 +33,18 @@ body {
     border-radius: 10px;
     box-shadow: inset 0px 3px 6px rgba(0, 0, 0, 0.1);
     color: #333;
+    margin-bottom: 15px;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 buttons per row */
+    gap: 10px;
 }
 
 .calculator button {
     width: 100%;
+    height: 60px;
     font-size: 22px;
     border: none;
     background-color: #4285f4;
@@ -58,21 +63,27 @@ body {
     grid-column: span 2; /* Zero button spans two columns */
 }
 
-.calculator button.celsius,
-.calculator button.fahrenheit {
+.calculator button[onclick^="celsiusToFahrenheit"],
+.calculator button[onclick^="fahrenheitToCelsius"] {
     grid-column: span 2; /* Celsius and Fahrenheit buttons span two columns */
     background-color: #34a853;
 }
 
-.calculator button.celsius:hover,
-.calculator button.fahrenheit:hover {
+.calculator button[onclick^="celsiusToFahrenheit"]:hover,
+.calculator button[onclick^="fahrenheitToCelsius"]:hover {
     background-color: #2c8b42;
+}
+
+.calculation-count {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #666;
 }
 
 /* Responsive behavior for smaller screens */
 @media (max-width: 768px) {
     .calculator {
-        width: 100%;
-        max-width: 400px;
+        width: 95%;
+        max-width: 360px;
     }
 }
