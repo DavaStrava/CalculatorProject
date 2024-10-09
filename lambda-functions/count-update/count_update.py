@@ -13,16 +13,25 @@ dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('CalculationTracker')
 
 def lambda_handler(event, context):
+    # Log the unique identifier and invocation
     logger.info("UPDATE - Count Update function invoked.")
     
     try:
-        # Extract expression and result from the event (sent from JavaScript)
-        body = json.loads(event['body'])
-        expression = body.get('expression')
-        result = Decimal(str(body.get('result')))  # Convert to Decimal for DynamoDB
+        # For API Gateway, the payload is usually inside 'body'
+        if 'body' in event:
+            body = json.loads(event['body'])
+        else:
+            body = event  # Use the direct event in case it's coming from a Lambda invocation
 
-        # Create a unique ID for the calculation (e.g., 'expression')
-        calculation_id = f'{expression}'
+        # Extract data from the event (coming from the calculation function)
+        expression = body.get('expression')
+        result = body.get('result')
+
+        if expression is None or result is None:
+            raise ValueError("Missing 'expression' or 'result' in the request body.")
+
+        # Create a unique ID for the calculation (e.g., '5add3', 'sqrt9')
+        calculation_id = f'{expression}-{result}'
 
         # Try to get the existing calculation from DynamoDB
         response = table.get_item(Key={'calculation_id': calculation_id})
@@ -34,8 +43,8 @@ def lambda_handler(event, context):
                 Key={'calculation_id': calculation_id},
                 UpdateExpression="set #count = #count + :val, #timestamp = :time",
                 ExpressionAttributeValues={
-                    ':val': Decimal(1),
-                    ':time': str(datetime.utcnow())
+                    ':val': Decimal(1),  # Use Decimal for the count increment
+                    ':time': str(datetime.utcnow())  # Keep timestamp as a string
                 },
                 ExpressionAttributeNames={
                     '#count': 'count',
@@ -49,15 +58,15 @@ def lambda_handler(event, context):
                 Item={
                     'calculation_id': calculation_id,
                     'expression': expression,
-                    'result': result,
+                    'result': str(result),
                     'timestamp': str(datetime.utcnow()),
-                    'count': Decimal(1)
+                    'count': Decimal(1)  # Use Decimal for the count
                 }
             )
 
         return {
             'statusCode': 200,
-            'body': json.dumps({'message': 'Calculation recorded successfully'})
+            'body': json.dumps({'message': 'Count updated successfully'})
         }
 
     except Exception as e:
