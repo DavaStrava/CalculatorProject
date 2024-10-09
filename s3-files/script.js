@@ -1,158 +1,139 @@
 let display = document.getElementById('display');
 
-// Function to append numbers or operators to the display
+// Append number or operator to the display
 function appendDisplay(value) {
     display.value += value;
 }
 
-// Function to clear the display
+// Clear the display
 function clearDisplay() {
     display.value = '';
 }
 
-// Function to delete the last character
+// Backspace one character
 function backspace() {
     display.value = display.value.slice(0, -1);
 }
 
-// Function to handle basic operations (+, -, *, /)
+// Perform basic calculations
 function calculate() {
-    const expression = display.value;
-
-    // Regular expression to capture num1, operator, and num2
-    const match = expression.match(/(\d+\.?\d*)([\+\-\*\/])(\d+\.?\d*)?/);
-
-    if (!match) {
+    try {
+        const result = eval(display.value); // Use eval for basic arithmetic
+        display.value = result;
+        // Log the calculation in DynamoDB
+        recordCalculationInDynamo(display.value, result);
+    } catch (error) {
         display.value = "Error";
-        return;
+        console.error('Calculation error:', error);
     }
-
-    const num1 = parseFloat(match[1]);
-    const operator = match[2];
-    const num2 = match[3] ? parseFloat(match[3]) : null;
-
-    // Map operator to a named operation for the API
-    let operation = "";
-    switch (operator) {
-        case '+':
-            operation = "add";
-            break;
-        case '-':
-            operation = "subtract";
-            break;
-        case '*':
-            operation = "multiply";
-            break;
-        case '/':
-            operation = "divide";
-            break;
-        default:
-            display.value = "Error";
-            return;
-    }
-
-    fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/CalculatorTest', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            "operation": operation,
-            "num1": num1,
-            "num2": num2
-        })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not OK');
-        }
-        return response.json();
-    })
-    .then(data => {
-        display.value = data.result;
-    })
-    .catch(error => {
-        display.value = "Error";
-        console.error('Error:', error);
-    });
 }
 
-// Function to handle advanced operations (sqrt, sin, cos, tan, power)
-function advancedOperation(operation) {
-    const num1 = parseFloat(display.value);
-    if (isNaN(num1)) {
+// Perform square root operation
+function sqrtOperation() {
+    const number = parseFloat(display.value);
+    if (isNaN(number)) {
         display.value = "Error";
         return;
     }
+    display.value = Math.sqrt(number);
+    // Log the calculation in DynamoDB
+    recordCalculationInDynamo(`sqrt(${number})`, display.value);
+}
 
-    let num2 = null;
+// Perform power operation
+function powerOperation() {
+    const base = parseFloat(display.value);
+    display.value = ''; // Clear the display for the exponent input
+    display.value = `${base}^`;
+}
 
-    // Handle the power operation that requires two inputs
-    if (operation === 'power') {
-        num2 = parseFloat(prompt("Enter the exponent:"));
-        if (isNaN(num2)) {
-            display.value = "Error";
-            return;
-        }
-    }
-
-    fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/CalculatorTest', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            "operation": operation,
-            "num1": num1,
-            "num2": num2  // num2 is null for sqrt, sin, cos, tan, unless it's a power operation
-        })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not OK');
-        }
-        return response.json();
-    })
-    .then(data => {
-        display.value = data.result;
-    })
-    .catch(error => {
+// Perform sine operation (convert degrees to radians)
+function sinOperation() {
+    const angleInDegrees = parseFloat(display.value);
+    if (isNaN(angleInDegrees)) {
         display.value = "Error";
-        console.error('Error:', error);
-    });
+        return;
+    }
+    const radians = toRadians(angleInDegrees);
+    display.value = Math.sin(radians).toFixed(4); // Calculate sine in radians
+    // Log the calculation in DynamoDB
+    recordCalculationInDynamo(`sin(${angleInDegrees}°)`, display.value);
+}
+
+// Perform cosine operation (convert degrees to radians)
+function cosOperation() {
+    const angleInDegrees = parseFloat(display.value);
+    if (isNaN(angleInDegrees)) {
+        display.value = "Error";
+        return;
+    }
+    const radians = toRadians(angleInDegrees);
+    display.value = Math.cos(radians).toFixed(4); // Calculate cosine in radians
+    // Log the calculation in DynamoDB
+    recordCalculationInDynamo(`cos(${angleInDegrees}°)`, display.value);
+}
+
+// Perform tangent operation (convert degrees to radians)
+function tanOperation() {
+    const angleInDegrees = parseFloat(display.value);
+    if (isNaN(angleInDegrees)) {
+        display.value = "Error";
+        return;
+    }
+    const radians = toRadians(angleInDegrees);
+    display.value = Math.tan(radians).toFixed(4); // Calculate tangent in radians
+    // Log the calculation in DynamoDB
+    recordCalculationInDynamo(`tan(${angleInDegrees}°)`, display.value);
+}
+
+// Convert degrees to radians
+function toRadians(degrees) {
+    return degrees * (Math.PI / 180); // Convert degrees to radians
 }
 
 // Celsius to Fahrenheit conversion
 function celsiusToFahrenheit() {
-    advancedOperation('celsius_to_fahrenheit');
+    const celsius = parseFloat(display.value);
+    if (isNaN(celsius)) {
+        display.value = "Error";
+        return;
+    }
+    const fahrenheit = (celsius * 9 / 5) + 32;
+    display.value = fahrenheit;
+    // Log the conversion in DynamoDB
+    recordCalculationInDynamo(`${celsius}C to F`, fahrenheit);
 }
 
 // Fahrenheit to Celsius conversion
 function fahrenheitToCelsius() {
-    advancedOperation('fahrenheit_to_celsius');
+    const fahrenheit = parseFloat(display.value);
+    if (isNaN(fahrenheit)) {
+        display.value = "Error";
+        return;
+    }
+    const celsius = (fahrenheit - 32) * 5 / 9;
+    display.value = celsius;
+    // Log the conversion in DynamoDB
+    recordCalculationInDynamo(`${fahrenheit}F to C`, celsius);
 }
 
-// Square root operation
-function squareRoot() {
-    advancedOperation('sqrt');
-}
-
-// Sine operation
-function sine() {
-    advancedOperation('sin');
-}
-
-// Cosine operation
-function cosine() {
-    advancedOperation('cos');
-}
-
-// Tangent operation
-function tangent() {
-    advancedOperation('tan');
-}
-
-// Power operation
-function power() {
-    advancedOperation('power');
+// Send a request to record the calculation in DynamoDB
+function recordCalculationInDynamo(expression, result) {
+    fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            "expression": expression,
+            "result": result
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Calculation recorded successfully:', data);
+    })
+    .catch(error => {
+        console.error('Error recording calculation:', error);
+    });
 }
