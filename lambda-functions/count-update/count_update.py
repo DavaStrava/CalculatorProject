@@ -80,3 +80,15 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps({'error': str(e)})
         }
+def api_response(status_code, body):
+    return {
+        'statusCode': status_code,
+        'body': json.dumps(body),
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'http://xaiproject.net',  # Allow requests from your domain
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',    # Allowed methods
+            'Access-Control-Allow-Headers': '*',                    # Allowed headers
+            'Access-Control-Allow-Credentials': 'true'              # Allow credentials if needed
+        },
+    }
