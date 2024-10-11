@@ -18,10 +18,15 @@ function backspace() {
 // Perform basic calculations
 function calculate() {
     try {
-        const result = eval(display.value); // Use eval for basic arithmetic
+        const expression = display.value;
+        const result = eval(expression); // Use eval for basic arithmetic
+        const num1 = parseFloat(expression.split(/[\+\-\*\/]/)[0]);
+        const num2 = parseFloat(expression.split(/[\+\-\*\/]/)[1]);
+        const operator = expression.match(/[\+\-\*\/]/)[0]; // Get the operator
+        
         display.value = result;
         // Log the calculation in DynamoDB
-        recordCalculationInDynamo(display.value, result);
+        recordCalculationInDynamo(num1, num2, operator);
     } catch (error) {
         display.value = "Error";
         console.error('Calculation error:', error);
@@ -37,7 +42,7 @@ function sqrtOperation() {
     }
     display.value = Math.sqrt(number);
     // Log the calculation in DynamoDB
-    recordCalculationInDynamo(`sqrt(${number})`, display.value);
+    recordCalculationInDynamo(number, null, 'sqrt');
 }
 
 // Perform power operation
@@ -57,7 +62,7 @@ function sinOperation() {
     const radians = toRadians(angleInDegrees);
     display.value = Math.sin(radians).toFixed(4); // Calculate sine in radians
     // Log the calculation in DynamoDB
-    recordCalculationInDynamo(`sin(${angleInDegrees}°)`, display.value);
+    recordCalculationInDynamo(angleInDegrees, null, 'sin');
 }
 
 // Perform cosine operation (convert degrees to radians)
@@ -70,7 +75,7 @@ function cosOperation() {
     const radians = toRadians(angleInDegrees);
     display.value = Math.cos(radians).toFixed(4); // Calculate cosine in radians
     // Log the calculation in DynamoDB
-    recordCalculationInDynamo(`cos(${angleInDegrees}°)`, display.value);
+    recordCalculationInDynamo(angleInDegrees, null, 'cos');
 }
 
 // Perform tangent operation (convert degrees to radians)
@@ -83,7 +88,7 @@ function tanOperation() {
     const radians = toRadians(angleInDegrees);
     display.value = Math.tan(radians).toFixed(4); // Calculate tangent in radians
     // Log the calculation in DynamoDB
-    recordCalculationInDynamo(`tan(${angleInDegrees}°)`, display.value);
+    recordCalculationInDynamo(angleInDegrees, null, 'tan');
 }
 
 // Convert degrees to radians
@@ -101,7 +106,7 @@ function celsiusToFahrenheit() {
     const fahrenheit = (celsius * 9 / 5) + 32;
     display.value = fahrenheit;
     // Log the conversion in DynamoDB
-    recordCalculationInDynamo(`${celsius}C to F`, fahrenheit);
+    recordCalculationInDynamo(celsius, null, 'C to F');
 }
 
 // Fahrenheit to Celsius conversion
@@ -114,19 +119,20 @@ function fahrenheitToCelsius() {
     const celsius = (fahrenheit - 32) * 5 / 9;
     display.value = celsius;
     // Log the conversion in DynamoDB
-    recordCalculationInDynamo(`${fahrenheit}F to C`, celsius);
+    recordCalculationInDynamo(fahrenheit, null, 'F to C');
 }
 
 // Send a request to record the calculation in DynamoDB
-function recordCalculationInDynamo(expression, result) {
+function recordCalculationInDynamo(num1, num2, operation) {
     fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            "expression": expression,
-            "result": result
+            "num1": num1,     // Send num1
+            "num2": num2,     // Send num2 (can be null for single-input calculations like sqrt)
+            "operation": operation  // Send the operation (e.g., 'add', 'sqrt')
         })
     })
     .then(response => response.json())
