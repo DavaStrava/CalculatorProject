@@ -16,6 +16,9 @@ def lambda_handler(event, context):
     logger.info("UPDATE - Count Update function invoked.")
 
     try:
+        # Log the received event for debugging purposes
+        logger.info(f"Received event: {json.dumps(event)}")
+        
         # Check if 'body' is present (API Gateway typically sends it here)
         if 'body' in event:
             logger.info("Event from API Gateway")
