@@ -122,6 +122,7 @@ function fahrenheitToCelsius() {
     recordCalculationInDynamo(fahrenheit, null, 'F to C');
 }
 
+
 // Send a request to record the calculation in DynamoDB
 function recordCalculationInDynamo(num1, num2, operation) {
     fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
@@ -132,7 +133,7 @@ function recordCalculationInDynamo(num1, num2, operation) {
         body: JSON.stringify({
             "num1": num1,     // Send num1
             "num2": num2,     // Send num2 (can be null for single-input calculations like sqrt)
-            "operation": operation  // Send the operation (e.g., 'add', 'sqrt')
+            "operation": operation  // Send the operation (e.g., 'add', 'sqrt', 'sin', 'cos', 'C to F', 'F to C')
         })
     })
     .then(response => response.json())
