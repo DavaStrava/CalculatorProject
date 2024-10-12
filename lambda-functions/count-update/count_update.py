@@ -1,6 +1,6 @@
 import json
 import boto3
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 import logging
 from datetime import datetime
 
@@ -26,10 +26,16 @@ def lambda_handler(event, context):
 
         # Extract data from the body
         expression = body.get('expression')
-        result = Decimal(str(body.get('result')))  # Convert result to Decimal for DynamoDB
+        result = body.get('result')
 
-        if not expression or not result:
+        if not expression or result is None:
             raise ValueError("Missing expression or result in the request")
+
+        # Validate if result can be converted to Decimal
+        try:
+            result = Decimal(str(result))
+        except (InvalidOperation, ValueError) as e:
+            raise ValueError(f"Invalid result value: {result}")
 
         # Create a unique ID for the calculation (use expression as key)
         calculation_id = expression
