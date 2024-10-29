@@ -4,11 +4,9 @@ import logging
 from decimal import Decimal
 from datetime import datetime 
 
-# Set up logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# Initialize DynamoDB resource
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('CalculationTracker')
 
@@ -16,36 +14,38 @@ def lambda_handler(event, context):
     logger.info("UPDATE - Count Update function invoked.")
 
     try:
-        # Parse the event (from API Gateway or direct invocation)
+        # Parse the event body
         if 'body' in event:
-            logger.info("Event from API Gateway")
             body = json.loads(event['body'])
         else:
-            logger.info("Direct Lambda invocation")
             body = event
 
-        # Validate that the required keys are present
-        if 'expression' not in body or 'result' not in body:
-            raise ValueError("Missing expression or result in the request")
+        # Extract the new format fields
+        num1 = body.get('num1')
+        num2 = body.get('num2')
+        operation = body.get('operation')
 
-        expression = body['expression']
-        result = Decimal(str(body['result']))
+        # Create expression and result based on the operation type
+        if operation in ['sqrt', 'sin', 'cos', 'tan', 'C to F', 'F to C']:
+            expression = f"{operation}({num1})"
+            result = num1  # Store the input number as result
+        else:
+            expression = f"{num1} {operation} {num2 if num2 is not None else ''}"
+            result = num1  # Store first number as result if no calculation needed
 
-        # Create a unique ID for the calculation (e.g., '10+5')
+        # Create a unique ID for the calculation
         calculation_id = f"{expression}"
 
         # Try to get the existing calculation from DynamoDB
         response = table.get_item(Key={'calculation_id': calculation_id})
         
         if 'Item' in response:
-            # If the calculation exists, increment the count
-            logger.info(f"Calculation {calculation_id} found, updating count.")
             table.update_item(
                 Key={'calculation_id': calculation_id},
                 UpdateExpression="set #count = #count + :val, #timestamp = :time",
                 ExpressionAttributeValues={
-                    ':val': Decimal(1),  # Increment count
-                    ':time': str(datetime.utcnow())  # Keep timestamp as a string
+                    ':val': Decimal(1),
+                    ':time': str(datetime.utcnow())
                 },
                 ExpressionAttributeNames={
                     '#count': 'count',
@@ -53,13 +53,11 @@ def lambda_handler(event, context):
                 }
             )
         else:
-            # If calculation does not exist, create a new entry
-            logger.info(f"New calculation {calculation_id}, adding to table.")
             table.put_item(
                 Item={
                     'calculation_id': calculation_id,
                     'expression': expression,
-                    'result': result,
+                    'result': Decimal(str(result)),
                     'timestamp': str(datetime.utcnow()),
                     'count': Decimal(1)
                 }
@@ -72,7 +70,7 @@ def lambda_handler(event, context):
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': 'http://xaiproject.net',
                 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                'Access-Control-Allow-Headers': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Allow-Credentials': 'true'
             }
         }
@@ -86,7 +84,7 @@ def lambda_handler(event, context):
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': 'http://xaiproject.net',
                 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                'Access-Control-Allow-Headers': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Allow-Credentials': 'true'
             }
         }
