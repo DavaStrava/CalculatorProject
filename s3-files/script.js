@@ -19,17 +19,24 @@ function backspace() {
 function calculate() {
     try {
         const expression = display.value;
-        const result = eval(expression); // Use eval for basic arithmetic
-        const num1 = parseFloat(expression.split(/[\+\-\*\/]/)[0]);
-        const num2 = parseFloat(expression.split(/[\+\-\*\/]/)[1]);
-        const operator = expression.match(/[\+\-\*\/]/)[0]; // Get the operator
+        console.log('Expression to calculate:', expression);
+        
+        // Parse the expression
+        const [num1, operator, num2] = expression.match(/(-?\d*\.?\d+)|[\+\-\*\/]/g) || [];
+        console.log('Parsed values:', { num1, operator, num2 });
+        
+        if (!num1 || !operator || !num2) {
+            throw new Error('Invalid expression');
+        }
+        
+        const result = eval(expression);
+        console.log('Calculation result:', result);
         
         display.value = result;
-        // Log the calculation in DynamoDB
-        recordCalculationInDynamo(num1, num2, operator);
+        recordCalculationInDynamo(parseFloat(num1), parseFloat(num2), operator);
     } catch (error) {
-        display.value = "Error";
         console.error('Calculation error:', error);
+        display.value = "Error";
     }
 }
 
@@ -125,22 +132,32 @@ function fahrenheitToCelsius() {
 
 // Send a request to record the calculation in DynamoDB
 function recordCalculationInDynamo(num1, num2, operation) {
+    const requestData = {
+        "num1": num1,
+        "num2": num2,
+        "operation": operation
+    };
+    
+    console.log('Sending data to Lambda:', requestData);
+    
     fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Origin': 'http://xaiproject.net'
         },
-        body: JSON.stringify({
-            "num1": num1,     // Send num1
-            "num2": num2,     // Send num2 (can be null for single-input calculations like sqrt)
-            "operation": operation  // Send the operation (e.g., 'add', 'sqrt', 'sin', 'cos', 'C to F', 'F to C')
-        })
+        mode: 'cors',
+        body: JSON.stringify(requestData)
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        return response.json();
+    })
     .then(data => {
-        console.log('Calculation recorded successfully:', data);
+        console.log('Response data:', data);
     })
     .catch(error => {
-        console.error('Error recording calculation:', error);
+        console.error('Detailed error:', error);
     });
 }
