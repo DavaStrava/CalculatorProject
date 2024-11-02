@@ -8,96 +8,95 @@ import traceback
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+# Initialize DynamoDB
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('CalculationTracker')
 
-def parse_event_body(event):
-    """Parse and validate the event body with detailed logging"""
-    logger.info(f"Parsing event: {json.dumps(event, default=str)}")
-    logger.info(f"Event type: {type(event)}")
-    
-    # If event is a string, try to parse it as JSON
-    if isinstance(event, str):
-        logger.info("Event is string, attempting to parse as JSON")
-        try:
-            return json.loads(event)
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse string event as JSON: {e}")
-            raise ValueError(f"Invalid JSON in event string: {e}")
+def validate_dynamodb_connection():
+    """Validate DynamoDB connection and table exists"""
+    try:
+        table.table_status
+        logger.info(f"Successfully connected to DynamoDB table: {table.table_name}")
+        return True
+    except Exception as e:
+        logger.error(f"Error connecting to DynamoDB: {str(e)}")
+        return False
 
-    # If event is a dict, look for the body
-    if isinstance(event, dict):
-        logger.info(f"Event keys: {list(event.keys())}")
+def update_calculation_count(calculation_id, expression, result):
+    """Update calculation count in DynamoDB with detailed logging"""
+    try:
+        # Log the attempt
+        logger.info(f"Attempting to update calculation: {calculation_id}")
         
-        # Check for body in event
-        if 'body' not in event:
-            logger.info("No 'body' in event, treating event as the body")
-            return event
-            
-        body = event['body']
-        logger.info(f"Body type: {type(body)}")
-        logger.info(f"Raw body: {body}")
+        # Check if calculation exists
+        get_response = table.get_item(Key={'calculation_id': calculation_id})
+        logger.info(f"Get item response: {json.dumps(get_response, default=str)}")
         
-        # Handle different body types
-        if body is None:
-            logger.info("Body is None, checking for queryStringParameters")
-            # Check if data might be in query parameters
-            if 'queryStringParameters' in event and event['queryStringParameters']:
-                logger.info(f"Found queryStringParameters: {event['queryStringParameters']}")
-                return event['queryStringParameters']
-            # Check if data might be in path parameters
-            elif 'pathParameters' in event and event['pathParameters']:
-                logger.info(f"Found pathParameters: {event['pathParameters']}")
-                return event['pathParameters']
-            else:
-                raise ValueError("No valid data found in event")
-                
-        # If body is a string, try to parse it as JSON
-        if isinstance(body, str):
-            try:
-                parsed_body = json.loads(body)
-                logger.info(f"Parsed body: {parsed_body}")
-                return parsed_body
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse body as JSON: {e}")
-                raise ValueError(f"Invalid JSON in body: {e}")
-                
-        # If body is already a dict, return it
-        if isinstance(body, dict):
-            return body
-            
-        raise ValueError(f"Unexpected body type: {type(body)}")
+        if 'Item' in get_response:
+            # Update existing calculation
+            logger.info(f"Updating existing calculation: {calculation_id}")
+            update_response = table.update_item(
+                Key={'calculation_id': calculation_id},
+                UpdateExpression="set #count = #count + :val, #timestamp = :time",
+                ExpressionAttributeNames={
+                    '#count': 'count',
+                    '#timestamp': 'timestamp'
+                },
+                ExpressionAttributeValues={
+                    ':val': Decimal('1'),
+                    ':time': str(datetime.utcnow())
+                },
+                ReturnValues="ALL_NEW"
+            )
+            logger.info(f"Update response: {json.dumps(update_response, default=str)}")
+        else:
+            # Create new calculation entry
+            logger.info(f"Creating new calculation entry: {calculation_id}")
+            put_response = table.put_item(
+                Item={
+                    'calculation_id': calculation_id,
+                    'expression': expression,
+                    'result': Decimal(str(result)),
+                    'timestamp': str(datetime.utcnow()),
+                    'count': Decimal('1')
+                }
+            )
+            logger.info(f"Put response: {json.dumps(put_response, default=str)}")
         
-    raise ValueError(f"Unexpected event type: {type(event)}")
+        return True
+    except Exception as e:
+        logger.error(f"Error updating DynamoDB: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise
 
 def lambda_handler(event, context):
-    logger.info("UPDATE - Count Update function invoked.")
-    logger.info(f"Raw event received: {json.dumps(event, default=str)}")
+    logger.info("Lambda function invoked")
+    logger.info(f"Received event: {json.dumps(event, default=str)}")
 
     try:
-        # Parse the event body with enhanced error handling
-        try:
-            body = parse_event_body(event)
-        except Exception as e:
-            logger.error(f"Error parsing event body: {str(e)}")
-            logger.error(f"Event that caused error: {json.dumps(event, default=str)}")
-            raise
+        # Validate DynamoDB connection first
+        if not validate_dynamodb_connection():
+            raise Exception("Failed to connect to DynamoDB")
 
-        # Validate required fields are present
-        if not isinstance(body, dict):
-            raise ValueError(f"Body must be a dictionary, got {type(body)}")
-            
+        # Parse the event body
+        if isinstance(event.get('body'), str):
+            body = json.loads(event['body'])
+        else:
+            body = event.get('body', {})
+        
+        logger.info(f"Parsed body: {json.dumps(body, default=str)}")
+
+        # Validate required fields
         required_fields = ['num1', 'operation']
-        missing_fields = [field for field in required_fields if field not in body]
-        if missing_fields:
-            raise ValueError(f"Missing required fields: {missing_fields}")
+        if not all(field in body for field in required_fields):
+            raise ValueError(f"Missing required fields. Required: {required_fields}, Received: {list(body.keys())}")
 
         # Extract values
         num1 = body['num1']
-        num2 = body.get('num2')  # optional
+        num2 = body.get('num2')
         operation = body['operation']
 
-        # Create calculation ID and expression
+        # Create expression
         if operation in ['sqrt', 'sin', 'cos', 'tan', 'C to F', 'F to C']:
             expression = f"{operation}({num1})"
         else:
@@ -105,42 +104,48 @@ def lambda_handler(event, context):
 
         calculation_id = expression
         
-        # Rest of your existing code...
+        # Update DynamoDB
+        success = update_calculation_count(calculation_id, expression, num1)
         
+        if not success:
+            raise Exception("Failed to update DynamoDB")
+
         return {
             'statusCode': 200,
-            'body': json.dumps({'message': 'Count updated successfully'}),
             'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': 'http://xaiproject.net',
                 'Access-Control-Allow-Methods': 'OPTIONS,POST',
                 'Access-Control-Allow-Headers': 'Content-Type'
-            }
+            },
+            'body': json.dumps({
+                'message': 'Calculation recorded successfully',
+                'calculationId': calculation_id
+            })
         }
 
     except ValueError as e:
         logger.error(f"Validation error: {str(e)}")
-        logger.error(f"Validation error traceback: {traceback.format_exc()}")
         return {
             'statusCode': 400,
-            'body': json.dumps({'error': str(e)}),
             'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': 'http://xaiproject.net',
                 'Access-Control-Allow-Methods': 'OPTIONS,POST',
                 'Access-Control-Allow-Headers': 'Content-Type'
-            }
+            },
+            'body': json.dumps({'error': str(e)})
         }
     except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}")
-        logger.error(f"Error traceback: {traceback.format_exc()}")
+        logger.error(f"Error: {str(e)}")
+        logger.error(traceback.format_exc())
         return {
             'statusCode': 500,
-            'body': json.dumps({'error': 'Internal server error'}),
             'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': 'http://xaiproject.net',
                 'Access-Control-Allow-Methods': 'OPTIONS,POST',
                 'Access-Control-Allow-Headers': 'Content-Type'
-            }
+            },
+            'body': json.dumps({'error': 'Internal server error'})
         }
