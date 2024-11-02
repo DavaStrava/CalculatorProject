@@ -48,7 +48,6 @@ function sqrtOperation() {
         return;
     }
     display.value = Math.sqrt(number);
-    // Log the calculation in DynamoDB
     recordCalculationInDynamo(number, null, 'sqrt');
 }
 
@@ -59,7 +58,12 @@ function powerOperation() {
     display.value = `${base}^`;
 }
 
-// Perform sine operation (convert degrees to radians)
+// Convert degrees to radians
+function toRadians(degrees) {
+    return degrees * (Math.PI / 180);
+}
+
+// Perform sine operation
 function sinOperation() {
     const angleInDegrees = parseFloat(display.value);
     if (isNaN(angleInDegrees)) {
@@ -67,12 +71,11 @@ function sinOperation() {
         return;
     }
     const radians = toRadians(angleInDegrees);
-    display.value = Math.sin(radians).toFixed(4); // Calculate sine in radians
-    // Log the calculation in DynamoDB
+    display.value = Math.sin(radians).toFixed(4);
     recordCalculationInDynamo(angleInDegrees, null, 'sin');
 }
 
-// Perform cosine operation (convert degrees to radians)
+// Perform cosine operation
 function cosOperation() {
     const angleInDegrees = parseFloat(display.value);
     if (isNaN(angleInDegrees)) {
@@ -80,12 +83,11 @@ function cosOperation() {
         return;
     }
     const radians = toRadians(angleInDegrees);
-    display.value = Math.cos(radians).toFixed(4); // Calculate cosine in radians
-    // Log the calculation in DynamoDB
+    display.value = Math.cos(radians).toFixed(4);
     recordCalculationInDynamo(angleInDegrees, null, 'cos');
 }
 
-// Perform tangent operation (convert degrees to radians)
+// Perform tangent operation
 function tanOperation() {
     const angleInDegrees = parseFloat(display.value);
     if (isNaN(angleInDegrees)) {
@@ -93,14 +95,8 @@ function tanOperation() {
         return;
     }
     const radians = toRadians(angleInDegrees);
-    display.value = Math.tan(radians).toFixed(4); // Calculate tangent in radians
-    // Log the calculation in DynamoDB
+    display.value = Math.tan(radians).toFixed(4);
     recordCalculationInDynamo(angleInDegrees, null, 'tan');
-}
-
-// Convert degrees to radians
-function toRadians(degrees) {
-    return degrees * (Math.PI / 180); // Convert degrees to radians
 }
 
 // Celsius to Fahrenheit conversion
@@ -112,7 +108,6 @@ function celsiusToFahrenheit() {
     }
     const fahrenheit = (celsius * 9 / 5) + 32;
     display.value = fahrenheit;
-    // Log the conversion in DynamoDB
     recordCalculationInDynamo(celsius, null, 'C to F');
 }
 
@@ -125,39 +120,47 @@ function fahrenheitToCelsius() {
     }
     const celsius = (fahrenheit - 32) * 5 / 9;
     display.value = celsius;
-    // Log the conversion in DynamoDB
     recordCalculationInDynamo(fahrenheit, null, 'F to C');
 }
 
-
-// Send a request to record the calculation in DynamoDB
+// Enhanced recordCalculationInDynamo function with better error handling
 function recordCalculationInDynamo(num1, num2, operation) {
-    const requestData = {
-        "num1": num1,
-        "num2": num2,
-        "operation": operation
+    // Create the request payload
+    const payload = {
+        num1: num1,
+        num2: num2,
+        operation: operation
     };
-    
-    console.log('Sending data to Lambda:', requestData);
-    
+
+    console.log('Sending calculation to backend:', payload);
+
+    // Make the API request
     fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Origin': 'http://xaiproject.net'
+            'Content-Type': 'application/json'
         },
-        mode: 'cors',
-        body: JSON.stringify(requestData)
+        body: JSON.stringify(payload)
     })
     .then(response => {
         console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         return response.json();
     })
     .then(data => {
-        console.log('Response data:', data);
+        console.log('Success:', data);
     })
     .catch(error => {
-        console.error('Detailed error:', error);
+        console.error('Error:', error);
+        // More specific error handling
+        if (error instanceof SyntaxError) {
+            console.error('Invalid JSON in response');
+        } else if (error instanceof TypeError) {
+            console.error('Network or CORS error');
+        } else {
+            console.error('Other error:', error.message);
+        }
     });
 }
