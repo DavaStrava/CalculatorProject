@@ -17,7 +17,7 @@ function appendDisplay(value) {
             }
             return;
         }
-        // Prevent multiple consecutive operators by replacing the last one
+        // Prevent multiple consecutive operators
         const lastChar = display.value.slice(-1);
         if (['+', '-', '*', '/', '^'].includes(lastChar)) {
             display.value = display.value.slice(0, -1) + value;
@@ -25,7 +25,6 @@ function appendDisplay(value) {
         }
     }
     
-    // Append the value to display
     display.value += value;
 }
 
@@ -45,35 +44,53 @@ function calculate() {
         const expression = display.value;
         console.log('Expression to calculate:', expression);
         
-        // Enhanced regular expression to handle negative numbers and all operators
-        const matches = expression.match(/(-?\d*\.?\d+)|[\+\-\*\/\^]/g);
+        // Special handling for subtraction
+        if (expression.includes('-')) {
+            // Skip if it's a negative number at the start
+            if (expression.indexOf('-') !== 0) {
+                // Split by minus, but keep the operator
+                const parts = expression.split('-');
+                if (parts.length === 2) {
+                    const num1 = parseFloat(parts[0]);
+                    const num2 = parseFloat(parts[1]);
+                    
+                    console.log('Parsed values for subtraction:', { num1, num2 });
+                    
+                    if (isNaN(num1) || isNaN(num2)) {
+                        throw new Error('Invalid numbers');
+                    }
+                    
+                    const result = num1 - num2;
+                    console.log('Calculation result:', result);
+                    display.value = result;
+                    recordCalculationInDynamo(num1, num2, '-');
+                    return;
+                }
+            }
+        }
+        
+        // For other operators, use regex
+        const matches = expression.match(/(-?\d*\.?\d+)|[\+\*\/\^]/g);
         console.log('Parsed matches:', matches);
         
-        // Validate that we have enough parts for a valid expression
         if (!matches || matches.length < 3) {
             throw new Error('Invalid expression');
         }
 
-        // Parse the numbers and operator
         const num1 = parseFloat(matches[0]);
         const operator = matches[1];
         const num2 = parseFloat(matches[2]);
         
         console.log('Parsed values:', { num1, operator, num2 });
         
-        // Validate the numbers
         if (isNaN(num1) || isNaN(num2)) {
             throw new Error('Invalid numbers');
         }
 
-        // Calculate result based on operator type
         let result;
         switch (operator) {
             case '+':
                 result = num1 + num2;
-                break;
-            case '-':
-                result = num1 - num2;
                 break;
             case '*':
                 result = num1 * num2;
@@ -93,8 +110,6 @@ function calculate() {
 
         console.log('Calculation result:', result);
         display.value = result;
-        
-        // Record the calculation in DynamoDB
         recordCalculationInDynamo(num1, num2, operator);
     } catch (error) {
         console.error('Calculation error:', error);
@@ -219,7 +234,6 @@ function fahrenheitToCelsius() {
 
 // Record calculation in DynamoDB with enhanced error handling and logging
 function recordCalculationInDynamo(num1, num2, operation) {
-    // Create the request payload with validated data
     const payload = {
         num1: num1,
         num2: num2,
@@ -228,7 +242,6 @@ function recordCalculationInDynamo(num1, num2, operation) {
 
     console.log('Attempting to record calculation:', payload);
 
-    // Make the API request to Lambda function
     fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
         method: 'POST',
         headers: {
@@ -237,20 +250,16 @@ function recordCalculationInDynamo(num1, num2, operation) {
         body: JSON.stringify(payload)
     })
     .then(async response => {
-        // Log detailed response information for debugging
         console.log('Response status:', response.status);
         console.log('Response headers:', Object.fromEntries([...response.headers]));
         
-        // Get raw response text for logging
         const responseText = await response.text();
         console.log('Raw response text:', responseText);
         
-        // Check if response is ok (status in 200-299 range)
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}, response: ${responseText}`);
         }
         
-        // Try to parse the response as JSON
         try {
             const data = JSON.parse(responseText);
             console.log('Successfully recorded calculation:', data);
