@@ -132,7 +132,15 @@ function recordCalculationInDynamo(num1, num2, operation) {
         operation: operation
     };
 
-    console.log('Sending calculation to backend:', payload);
+    // Log the complete request details
+    console.log('Complete request details:', {
+        url: 'https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    });
 
     // Make the API request
     fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
@@ -142,25 +150,29 @@ function recordCalculationInDynamo(num1, num2, operation) {
         },
         body: JSON.stringify(payload)
     })
-    .then(response => {
+    .then(async response => {
         console.log('Response status:', response.status);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        console.log('Response headers:', Object.fromEntries([...response.headers]));
+        
+        const text = await response.text();
+        console.log('Raw response:', text);
+        
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error('Error parsing response:', e);
+            throw new Error('Invalid JSON response');
         }
-        return response.json();
     })
     .then(data => {
-        console.log('Success:', data);
+        console.log('Parsed response data:', data);
     })
     .catch(error => {
-        console.error('Error:', error);
-        // More specific error handling
-        if (error instanceof SyntaxError) {
-            console.error('Invalid JSON in response');
-        } else if (error instanceof TypeError) {
-            console.error('Network or CORS error');
-        } else {
-            console.error('Other error:', error.message);
+        console.error('Request error:', error);
+        console.error('Error type:', error.constructor.name);
+        console.error('Error message:', error.message);
+        if (error.stack) {
+            console.error('Error stack:', error.stack);
         }
     });
 }
