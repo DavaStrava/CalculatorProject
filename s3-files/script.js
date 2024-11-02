@@ -132,17 +132,8 @@ function recordCalculationInDynamo(num1, num2, operation) {
         operation: operation
     };
 
-    // Log the complete request details
-    console.log('Complete request details:', {
-        url: 'https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator',
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    });
+    console.log('Attempting to record calculation:', payload);
 
-    // Make the API request
     fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
         method: 'POST',
         headers: {
@@ -151,28 +142,28 @@ function recordCalculationInDynamo(num1, num2, operation) {
         body: JSON.stringify(payload)
     })
     .then(async response => {
+        // Log full response details
         console.log('Response status:', response.status);
         console.log('Response headers:', Object.fromEntries([...response.headers]));
         
-        const text = await response.text();
-        console.log('Raw response:', text);
+        const responseText = await response.text();
+        console.log('Raw response text:', responseText);
         
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}, response: ${responseText}`);
+        }
+        
+        // Try to parse JSON response
         try {
-            return JSON.parse(text);
+            const data = JSON.parse(responseText);
+            console.log('Successfully recorded calculation:', data);
+            return data;
         } catch (e) {
-            console.error('Error parsing response:', e);
+            console.error('Error parsing response JSON:', e);
             throw new Error('Invalid JSON response');
         }
     })
-    .then(data => {
-        console.log('Parsed response data:', data);
-    })
     .catch(error => {
-        console.error('Request error:', error);
-        console.error('Error type:', error.constructor.name);
-        console.error('Error message:', error.message);
-        if (error.stack) {
-            console.error('Error stack:', error.stack);
-        }
+        console.error('Error recording calculation:', error);
     });
 }
