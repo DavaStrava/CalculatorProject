@@ -8,7 +8,7 @@ import traceback
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# Initialize DynamoDB
+# Initialize -- DynamoDB
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('CalculationTracker')
 
