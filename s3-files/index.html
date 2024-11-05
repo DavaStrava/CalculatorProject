@@ -1,52 +1,137 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Calculator</title>
+    <title>Advanced Calculator - XAI Project</title>
+    <!-- Add FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="calculator">
-        <input type="text" id="display" disabled />
-        <div class="buttons">
-            <button onclick="clearDisplay()">C</button>
-            <button onclick="appendDisplay('/')">/</button>
-            <button onclick="appendDisplay('*')">*</button>
-            <button onclick="backspace()">←</button>
-
-            <button onclick="appendDisplay('7')">7</button>
-            <button onclick="appendDisplay('8')">8</button>
-            <button onclick="appendDisplay('9')">9</button>
-            <button onclick="appendDisplay('-')">-</button>
-
-            <button onclick="appendDisplay('4')">4</button>
-            <button onclick="appendDisplay('5')">5</button>
-            <button onclick="appendDisplay('6')">6</button>
-            <button onclick="appendDisplay('+')">+</button>
-
-            <button onclick="appendDisplay('1')">1</button>
-            <button onclick="appendDisplay('2')">2</button>
-            <button onclick="appendDisplay('3')">3</button>
-            <button onclick="calculate()">=</button>
-
-            <button onclick="appendDisplay('0')" class="zero">0</button>
-            <button onclick="appendDisplay('.')">.</button>
-
-            <!-- Advanced operation buttons -->
-            <button onclick="sqrtOperation()">√</button>
-            <button onclick="powerOperation()">^</button>
-            <button onclick="sinOperation()">sin</button>
-            <button onclick="cosOperation()">cos</button>
-            <button onclick="tanOperation()">tan</button>
-
-            <!-- Temperature conversion buttons -->
-            <button onclick="celsiusToFahrenheit()">Celsius to Fahrenheit</button>
-            <button onclick="fahrenheitToCelsius()">Fahrenheit to Celsius</button>
+    <!-- Top Navigation Bar -->
+    <nav class="top-nav">
+        <div class="nav-container">
+             <a href="/" class="nav-link active">
+                <i class="fas fa-home"></i>
+                <span>Home - Scientific Calculator</span>
+            </a> 
+            <a href="/PercentageCalculator" class="nav-link">
+                <i class="fas fa-calculator"></i>
+                <span>Percentage Calculator</span>
+            </a>
+            <a href="/ConversionsCalculator" class="nav-link">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Conversions Calculator</span>
+            </a>
+            <a href="/FinancialCalculator" class="nav-link">
+                <i class="fas fa-dollar-sign"></i>
+                <span>Financial Calculator</span>
+            </a>
+            <a href="/HealthCalculator" class="nav-link">
+                <i class="fas fa-heart"></i>
+                <span>Health Calculator</span>
+            </a>
+            <a href="/GraphingCalculator" class="nav-link">
+                <i class="fas fa-chart-line"></i>
+                <span>Graphing Calculator</span>
+            </a>
         </div>
-    </div>
-<!-- Add this div to display the calculation count -->
-<div id="calculation-count" class="calculation-count">Loading total calculations...</div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-container">
+        <div class="calculator-card">
+            <h2 class="card-title">Scientific Calculator</h2>
+
+            <!-- Multi-line Display -->
+            <div class="calculator-display">
+                <div class="previous-calculations"></div>
+                <div class="current-input">
+                    <span class="cursor">_</span>
+                </div>
+            </div>
+
+            <!-- Function Categories -->
+            <div class="function-tabs">
+                <button class="tab-button active">Basic</button>
+                <button class="tab-button">Trigonometry</button>
+                <button class="tab-button">Calculus</button>
+                <button class="tab-button">Statistics</button>
+                <button class="tab-button">Matrices</button>
+            </div>
+
+            <!-- Calculator Buttons -->
+            <div class="calculator-buttons">
+                <!-- Power and Root Functions -->
+                <button class="function-button">x²</button>
+                <button class="function-button">√x</button>
+                <button class="function-button">xⁿ</button>
+                <button class="function-button">log</button>
+
+                <!-- Number Pad -->
+                <button class="number-button">7</button>
+                <button class="number-button">8</button>
+                <button class="number-button">9</button>
+                <button class="operator-button">÷</button>
+
+                <button class="number-button">4</button>
+                <button class="number-button">5</button>
+                <button class="number-button">6</button>
+                <button class="operator-button">×</button>
+
+                <button class="number-button">1</button>
+                <button class="number-button">2</button>
+                <button class="number-button">3</button>
+                <button class="operator-button">-</button>
+
+                <button class="number-button">0</button>
+                <button class="number-button">.</button>
+                <button class="equals-button">=</button>
+                <button class="operator-button">+</button>
+            </div>
+
+            <!-- Expression Input -->
+            <div class="input-area">
+                <input type="text" class="expression-input" placeholder="Enter expression">
+                <select class="unit-select">
+                    <option>RAD</option>
+                    <option>DEG</option>
+                </select>
+                <button class="calculate-button">Calculate</button>
+            </div>
+
+            <!-- Syntax Help Panel -->
+            <div class="syntax-panel">
+                <h3 class="syntax-title">Common Syntax Examples</h3>
+                <div class="syntax-grid">
+                    <div class="syntax-item">
+                        <code>x^2</code>
+                        <span>Square</span>
+                    </div>
+                    <div class="syntax-item">
+                        <code>sqrt(x)</code>
+                        <span>Square root</span>
+                    </div>
+                    <div class="syntax-item">
+                        <code>sin(x)</code>
+                        <span>Sine (in radians)</span>
+                    </div>
+                    <div class="syntax-item">
+                        <code>sin(45*pi/180)</code>
+                        <span>Sine in degrees</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Bar -->
+        <div class="stats-bar">
+            <div id="calculation-count">Loading total calculations...</div>
+        </div>
+    </main>
+
     <script src="js/script.js"></script>
     <script src="js/stats.js"></script>
 </body>
