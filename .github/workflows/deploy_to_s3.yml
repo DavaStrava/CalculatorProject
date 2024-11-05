@@ -24,7 +24,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2  # Change this to your region if different
 
-      # Step 3: Sync the entire directory to S3, updating only changed files
-      - name: Sync S3 Files
+      # Step 3: Sync JS files to the js/ folder
+      - name: Sync JS Files
         run: |
-          aws s3 sync s3-files/ s3://xaiproject.net/ --exclude ".git/*" --delete
+          aws s3 sync s3-files/ s3://xaiproject.net/js/ --exclude "*" --include "*.js" --delete
+
+      # Step 4: Sync all other files to root, excluding JS files
+      - name: Sync Non-JS Files
+        run: |
+          aws s3 sync s3-files/ s3://xaiproject.net/ --exclude "*.js" --exclude ".git/*" --delete
