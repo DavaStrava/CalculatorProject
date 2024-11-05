@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Calculator - XAI Project</title>
-    <!-- Add FontAwesome for icons -->
+    <title>Scientific Calculator - XAI Project</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,10 +12,10 @@
     <!-- Top Navigation Bar -->
     <nav class="top-nav">
         <div class="nav-container">
-             <a href="/" class="nav-link active">
+            <a href="/" class="nav-link active">
                 <i class="fas fa-home"></i>
                 <span>Home - Scientific Calculator</span>
-            </a> 
+            </a>
             <a href="/PercentageCalculator" class="nav-link">
                 <i class="fas fa-calculator"></i>
                 <span>Percentage Calculator</span>
@@ -45,12 +44,21 @@
         <div class="calculator-card">
             <h2 class="card-title">Scientific Calculator</h2>
 
-            <!-- Multi-line Display -->
+            <!-- Calculator Display -->
             <div class="calculator-display">
                 <div class="previous-calculations"></div>
                 <div class="current-input">
                     <span class="cursor">_</span>
                 </div>
+            </div>
+
+            <!-- Angle Mode Toggle -->
+            <div class="angle-mode">
+                <label>Angle Mode:</label>
+                <select class="unit-select" id="angleMode">
+                    <option value="rad">RAD</option>
+                    <option value="deg">DEG</option>
+                </select>
             </div>
 
             <!-- Function Categories -->
@@ -62,15 +70,25 @@
                 <button class="tab-button">Matrices</button>
             </div>
 
-            <!-- Calculator Buttons -->
-            <div class="calculator-buttons">
-                <!-- Power and Root Functions -->
+            <!-- Scientific Functions -->
+            <div class="scientific-functions">
+                <button class="function-button">π</button>
+                <button class="function-button">e</button>
                 <button class="function-button">x²</button>
                 <button class="function-button">√x</button>
-                <button class="function-button">xⁿ</button>
+                <button class="function-button">sin</button>
+                <button class="function-button">cos</button>
+                <button class="function-button">tan</button>
                 <button class="function-button">log</button>
+            </div>
 
-                <!-- Number Pad -->
+            <!-- Calculator Buttons -->
+            <div class="calculator-buttons">
+                <button class="function-button">(</button>
+                <button class="function-button">)</button>
+                <button class="function-button">%</button>
+                <button class="function-button">C</button>
+
                 <button class="number-button">7</button>
                 <button class="number-button">8</button>
                 <button class="number-button">9</button>
@@ -92,35 +110,25 @@
                 <button class="operator-button">+</button>
             </div>
 
-            <!-- Expression Input -->
-            <div class="input-area">
-                <input type="text" class="expression-input" placeholder="Enter expression">
-                <select class="unit-select">
-                    <option>RAD</option>
-                    <option>DEG</option>
-                </select>
-                <button class="calculate-button">Calculate</button>
-            </div>
-
-            <!-- Syntax Help Panel -->
+            <!-- Syntax Examples Panel -->
             <div class="syntax-panel">
                 <h3 class="syntax-title">Common Syntax Examples</h3>
                 <div class="syntax-grid">
                     <div class="syntax-item">
-                        <code>x^2</code>
-                        <span>Square</span>
-                    </div>
-                    <div class="syntax-item">
-                        <code>sqrt(x)</code>
-                        <span>Square root</span>
-                    </div>
-                    <div class="syntax-item">
-                        <code>sin(x)</code>
-                        <span>Sine (in radians)</span>
-                    </div>
-                    <div class="syntax-item">
-                        <code>sin(45*pi/180)</code>
+                        <code>sin(45°)</code>
                         <span>Sine in degrees</span>
+                    </div>
+                    <div class="syntax-item">
+                        <code>π × r²</code>
+                        <span>Area of circle</span>
+                    </div>
+                    <div class="syntax-item">
+                        <code>log(100)</code>
+                        <span>Logarithm</span>
+                    </div>
+                    <div class="syntax-item">
+                        <code>√(25)</code>
+                        <span>Square root</span>
                     </div>
                 </div>
             </div>
