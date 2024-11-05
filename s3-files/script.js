@@ -37,6 +37,17 @@ const Logger = {
     }
 };
 
+// Add this new constant for function templates
+const FUNCTION_TEMPLATES = {
+    'sin': 'sin(',
+    'cos': 'cos(',
+    'tan': 'tan(',
+    'log': 'log(',
+    'x²': '^2',
+    '√x': '√(',
+    'xⁿ': '^'
+};
+
 // Calculator State Management
 class CalculatorState {
     constructor() {
@@ -48,6 +59,10 @@ class CalculatorState {
         this.memory = 0;
         this.eventListeners = new Map();
         this.lastResult = null;
+        // Add new properties for function handling
+        this.waitingForOperand = false;    // Indicates waiting for function input
+        this.pendingFunction = null;       // Stores current function being processed
+        this.openParentheses = 0;         // Tracks open parentheses
     }
 
     reset() {
@@ -55,6 +70,10 @@ class CalculatorState {
         this.previousInput = '';
         this.currentOperator = null;
         this.shouldResetDisplay = false;
+          // Reset new properties
+        this.waitingForOperand = false;
+        this.pendingFunction = null;
+        this.openParentheses = 0;
         Logger.info('Calculator state reset');
     }
 
@@ -101,7 +120,17 @@ function initializeCalculator() {
 
         // Attach equals button listener
         const equalsButton = document.querySelector('.equals-button');
-        attachEventListener(equalsButton, 'click', calculateResult);
+        attachEventListener(equalsButton, 'click', () => {
+            if (calculatorState.pendingFunction) {
+                if (calculatorState.openParentheses > 0) {
+                    calculatorState.currentInput += ')'.repeat(calculatorState.openParentheses);
+                    calculatorState.openParentheses = 0;
+                    calculateFunction();
+                }
+            } else {
+                calculateResult();
+            }
+        });
 
         // Attach angle mode listener
         const angleModeSelect = document.getElementById('angleMode');
@@ -133,7 +162,6 @@ function handleNumberInput(number) {
             return;
         }
 
-        // Handle decimal point
         if (number === '.' && calculatorState.currentInput.includes('.')) {
             Logger.warn('Decimal point already exists');
             return;
@@ -141,6 +169,16 @@ function handleNumberInput(number) {
 
         calculatorState.currentInput += number;
         updateDisplay();
+        
+        // Add auto-closing parentheses for functions
+        if (calculatorState.waitingForOperand && 
+            calculatorState.openParentheses === 1 && 
+            !isNaN(number)) {
+            calculatorState.currentInput += ')';
+            calculatorState.openParentheses--;
+            calculateFunction();
+        }
+
         Logger.info(`Number input: ${number}`);
     } catch (error) {
         Logger.error('Error handling number input', error);
@@ -175,58 +213,98 @@ function handleOperator(operator) {
 // Handle scientific functions
 function handleFunction(func) {
     try {
-        let result;
-        const input = parseFloat(calculatorState.currentInput);
-
         switch (func) {
             case 'π':
-                result = MATH_CONSTANTS.PI;
+                calculatorState.currentInput += Math.PI.toString();
                 break;
             case 'e':
-                result = MATH_CONSTANTS.E;
-                break;
-            case 'x²':
-                result = Math.pow(input, 2);
-                break;
-            case '√x':
-                if (input < 0) throw new Error('Cannot calculate square root of negative number');
-                result = Math.sqrt(input);
-                break;
-            case 'sin':
-                result = calculatorState.isRadianMode ? 
-                    Math.sin(input) : 
-                    Math.sin(input * Math.PI / 180);
-                break;
-            case 'cos':
-                result = calculatorState.isRadianMode ? 
-                    Math.cos(input) : 
-                    Math.cos(input * Math.PI / 180);
-                break;
-            case 'tan':
-                result = calculatorState.isRadianMode ? 
-                    Math.tan(input) : 
-                    Math.tan(input * Math.PI / 180);
-                break;
-            case 'log':
-                if (input <= 0) throw new Error('Cannot calculate log of non-positive number');
-                result = Math.log10(input);
+                calculatorState.currentInput += Math.E.toString();
                 break;
             default:
-                throw new Error('Unknown function');
+                if (FUNCTION_TEMPLATES[func]) {
+                    if (calculatorState.currentInput && 
+                        !calculatorState.currentInput.endsWith(' ') && 
+                        !calculatorState.currentInput.endsWith('(')) {
+                        calculatorState.currentInput += ' ';
+                    }
+                    
+                    if (func === 'x²') {
+                        if (calculatorState.currentInput) {
+                            calculatorState.currentInput += FUNCTION_TEMPLATES[func];
+                            calculateFunction();
+                        }
+                    } else {
+                        calculatorState.pendingFunction = func;
+                        calculatorState.currentInput += FUNCTION_TEMPLATES[func];
+                        calculatorState.openParentheses++;
+                        calculatorState.waitingForOperand = true;
+                    }
+                }
+        }
+        updateDisplay();
+        Logger.info(`Function ${func} template applied`);
+    } catch (error) {
+        Logger.error(`Error in function ${func}`, error);
+        showError(ERROR_MESSAGES.MATH);
+    }
+}
+
+// Add new calculateFunction method
+function calculateFunction() {
+    try {
+        if (!calculatorState.pendingFunction) return;
+
+        let expression = calculatorState.currentInput;
+        let result;
+
+        // Extract the value from inside the parentheses
+        const matches = expression.match(/[a-z]+\((.*)\)/);
+        if (matches && matches[1]) {
+            const input = parseFloat(matches[1]);
+            
+            switch (calculatorState.pendingFunction) {
+                case 'sin':
+                    result = calculatorState.isRadianMode ? 
+                        Math.sin(input) : 
+                        Math.sin(input * Math.PI / 180);
+                    break;
+                case 'cos':
+                    result = calculatorState.isRadianMode ? 
+                        Math.cos(input) : 
+                        Math.cos(input * Math.PI / 180);
+                    break;
+                case 'tan':
+                    result = calculatorState.isRadianMode ? 
+                        Math.tan(input) : 
+                        Math.tan(input * Math.PI / 180);
+                    break;
+                case 'log':
+                    if (input <= 0) throw new Error('Cannot calculate log of non-positive number');
+                    result = Math.log10(input);
+                    break;
+                case '√x':
+                    if (input < 0) throw new Error('Cannot calculate square root of negative number');
+                    result = Math.sqrt(input);
+                    break;
+            }
+        } else if (expression.includes('^')) {
+            const [base, exponent] = expression.split('^').map(parseFloat);
+            result = Math.pow(base, exponent);
         }
 
         if (!isFinite(result)) {
             throw new Error('Result is infinite or undefined');
         }
 
-        addToHistory(`${func}(${input}) = ${result}`);
+        addToHistory(`${calculatorState.currentInput} = ${result}`);
         calculatorState.currentInput = result.toString();
         calculatorState.lastResult = result;
+        calculatorState.pendingFunction = null;
+        calculatorState.waitingForOperand = false;
         updateDisplay();
-        
-        Logger.info(`Function ${func} calculated: ${result}`);
+
     } catch (error) {
-        Logger.error(`Error in function ${func}`, error);
+        Logger.error('Error calculating function', error);
         showError(ERROR_MESSAGES.MATH);
     }
 }
