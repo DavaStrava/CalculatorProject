@@ -1,275 +1,359 @@
-// Get the display element from the DOM
-let display = document.getElementById('display');
+// Constants for error logging and configuration
+const DEBUG = true; // Set to false in production
+const MAX_DISPLAY_LENGTH = 25;
+const ERROR_MESSAGES = {
+    SYNTAX: 'Syntax Error',
+    MATH: 'Math Error',
+    DIVIDE_ZERO: 'Cannot divide by zero',
+    INVALID_INPUT: 'Invalid Input',
+    OVERFLOW: 'Number too large'
+};
 
-// Append number or operator to the display with improved validation
-function appendDisplay(value) {
-    // If the display shows "Error", clear it first
-    if (display.value === "Error") {
-        display.value = '';
-    }
-    
-    // Handle operator inputs with validation
-    if (['+', '-', '*', '/', '^'].includes(value)) {
-        if (display.value === '') {
-            // Only allow minus sign for negative numbers at start
-            if (value === '-') {
-                display.value = value;
-            }
-            return;
+// Logger utility for development and debugging
+const Logger = {
+    error: function(message, error) {
+        if (DEBUG) {
+            console.error(`[Calculator Error]: ${message}`, error);
         }
-        // Prevent multiple consecutive operators
-        const lastChar = display.value.slice(-1);
-        if (['+', '-', '*', '/', '^'].includes(lastChar)) {
-            display.value = display.value.slice(0, -1) + value;
-            return;
+    },
+    info: function(message) {
+        if (DEBUG) {
+            console.info(`[Calculator Info]: ${message}`);
+        }
+    },
+    warn: function(message) {
+        if (DEBUG) {
+            console.warn(`[Calculator Warning]: ${message}`);
         }
     }
-    
-    display.value += value;
+};
+
+// State management for calculator
+class CalculatorState {
+    constructor() {
+        this.currentInput = '';
+        this.previousInput = '';
+        this.currentOperator = null;
+        this.shouldResetDisplay = false;
+        this.memory = 0;
+        this.isRadianMode = true;
+    }
+
+    reset() {
+        this.currentInput = '';
+        this.previousInput = '';
+        this.currentOperator = null;
+        this.shouldResetDisplay = false;
+        Logger.info('Calculator state reset');
+    }
 }
 
-// Clear the calculator display
-function clearDisplay() {
-    display.value = '';
-}
+// Initialize calculator state
+const calculatorState = new CalculatorState();
 
-// Remove the last character from display (backspace)
-function backspace() {
-    display.value = display.value.slice(0, -1);
-}
+// DOM Elements
+let display;
+let previousCalculations;
 
-// Perform basic calculations with improved error handling and operator support
-function calculate() {
+// Initialize calculator when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
     try {
-        const expression = display.value;
-        console.log('Expression to calculate:', expression);
-        
-        // Special handling for subtraction
-        if (expression.includes('-')) {
-            // Skip if it's a negative number at the start
-            if (expression.indexOf('-') !== 0) {
-                // Split by minus, but keep the operator
-                const parts = expression.split('-');
-                if (parts.length === 2) {
-                    const num1 = parseFloat(parts[0]);
-                    const num2 = parseFloat(parts[1]);
-                    
-                    console.log('Parsed values for subtraction:', { num1, num2 });
-                    
-                    if (isNaN(num1) || isNaN(num2)) {
-                        throw new Error('Invalid numbers');
-                    }
-                    
-                    const result = num1 - num2;
-                    console.log('Calculation result:', result);
-                    display.value = result;
-                    recordCalculationInDynamo(num1, num2, '-');
-                    return;
-                }
+        initializeCalculator();
+        Logger.info('Calculator initialized successfully');
+    } catch (error) {
+        Logger.error('Failed to initialize calculator', error);
+        showError('Failed to initialize calculator');
+    }
+});
+
+// Initialize calculator and attach event listeners
+function initializeCalculator() {
+    // Get DOM elements
+    display = document.querySelector('.calculator-display .current-input');
+    previousCalculations = document.querySelector('.calculator-display .previous-calculations');
+
+    // Attach number button listeners
+    document.querySelectorAll('.number-button').forEach(button => {
+        button.addEventListener('click', () => handleNumberInput(button.textContent));
+    });
+
+    // Attach operator button listeners
+    document.querySelectorAll('.operator-button').forEach(button => {
+        button.addEventListener('click', () => handleOperator(button.textContent));
+    });
+
+    // Attach function button listeners
+    document.querySelectorAll('.function-button').forEach(button => {
+        button.addEventListener('click', () => handleFunction(button.textContent));
+    });
+
+    // Attach equals button listener
+    document.querySelector('.equals-button').addEventListener('click', calculateResult);
+
+    // Attach keyboard input listener
+    document.addEventListener('keydown', handleKeyboardInput);
+}
+
+// Handle number input
+function handleNumberInput(number) {
+    try {
+        if (calculatorState.shouldResetDisplay) {
+            calculatorState.currentInput = '';
+            calculatorState.shouldResetDisplay = false;
+        }
+
+        if (calculatorState.currentInput.length >= MAX_DISPLAY_LENGTH) {
+            Logger.warn('Maximum input length reached');
+            return;
+        }
+
+        calculatorState.currentInput += number;
+        updateDisplay();
+        Logger.info(`Number input: ${number}`);
+    } catch (error) {
+        Logger.error('Error handling number input', error);
+        showError(ERROR_MESSAGES.INVALID_INPUT);
+    }
+}
+
+// Handle operator input
+function handleOperator(operator) {
+    try {
+        if (calculatorState.currentInput === '' && calculatorState.previousInput === '') {
+            Logger.warn('Operator pressed without any input');
+            return;
+        }
+
+        if (calculatorState.currentInput !== '') {
+            if (calculatorState.previousInput !== '') {
+                calculateResult();
             }
-        }
-        
-        // For other operators, use regex
-        const matches = expression.match(/(-?\d*\.?\d+)|[\+\*\/\^]/g);
-        console.log('Parsed matches:', matches);
-        
-        if (!matches || matches.length < 3) {
-            throw new Error('Invalid expression');
+            calculatorState.previousInput = calculatorState.currentInput;
+            calculatorState.currentInput = '';
         }
 
-        const num1 = parseFloat(matches[0]);
-        const operator = matches[1];
-        const num2 = parseFloat(matches[2]);
-        
-        console.log('Parsed values:', { num1, operator, num2 });
-        
-        if (isNaN(num1) || isNaN(num2)) {
-            throw new Error('Invalid numbers');
-        }
+        calculatorState.currentOperator = operator;
+        Logger.info(`Operator selected: ${operator}`);
+    } catch (error) {
+        Logger.error('Error handling operator', error);
+        showError(ERROR_MESSAGES.SYNTAX);
+    }
+}
 
+// Handle scientific functions
+function handleFunction(func) {
+    try {
+        const input = parseFloat(calculatorState.currentInput);
         let result;
-        switch (operator) {
-            case '+':
-                result = num1 + num2;
+
+        switch (func) {
+            case 'x²':
+                result = Math.pow(input, 2);
                 break;
-            case '*':
-                result = num1 * num2;
-                break;
-            case '/':
-                if (num2 === 0) {
-                    throw new Error('Division by zero');
+            case '√x':
+                if (input < 0) {
+                    throw new Error('Cannot calculate square root of negative number');
                 }
-                result = num1 / num2;
+                result = Math.sqrt(input);
                 break;
-            case '^':
-                result = Math.pow(num1, num2);
+            case 'xⁿ':
+                calculatorState.currentOperator = 'pow';
+                calculatorState.previousInput = calculatorState.currentInput;
+                calculatorState.currentInput = '';
+                return;
+            case 'log':
+                if (input <= 0) {
+                    throw new Error('Cannot calculate log of non-positive number');
+                }
+                result = Math.log10(input);
                 break;
             default:
-                throw new Error('Invalid operator');
+                Logger.warn(`Unknown function: ${func}`);
+                return;
         }
 
-        console.log('Calculation result:', result);
-        display.value = result;
-        recordCalculationInDynamo(num1, num2, operator);
+        addToHistory(`${func}(${input}) = ${result}`);
+        calculatorState.currentInput = result.toString();
+        updateDisplay();
+        Logger.info(`Function ${func} calculated: ${result}`);
     } catch (error) {
-        console.error('Calculation error:', error);
-        display.value = "Error";
+        Logger.error(`Error in function ${func}`, error);
+        showError(ERROR_MESSAGES.MATH);
     }
 }
 
-// Perform square root operation
-function sqrtOperation() {
+// Calculate result based on current state
+function calculateResult() {
     try {
-        const number = parseFloat(display.value);
-        if (isNaN(number)) {
-            throw new Error('Invalid number');
+        if (calculatorState.previousInput === '' || calculatorState.currentInput === '') {
+            Logger.warn('Incomplete expression for calculation');
+            return;
         }
-        const result = Math.sqrt(number);
-        display.value = result;
-        recordCalculationInDynamo(number, null, 'sqrt');
+
+        const prev = parseFloat(calculatorState.previousInput);
+        const current = parseFloat(calculatorState.currentInput);
+        let result;
+
+        switch (calculatorState.currentOperator) {
+            case '+':
+                result = prev + current;
+                break;
+            case '-':
+                result = prev - current;
+                break;
+            case '×':
+                result = prev * current;
+                break;
+            case '÷':
+                if (current === 0) {
+                    throw new Error('Division by zero');
+                }
+                result = prev / current;
+                break;
+            case 'pow':
+                result = Math.pow(prev, current);
+                break;
+            default:
+                Logger.warn(`Unknown operator: ${calculatorState.currentOperator}`);
+                return;
+        }
+
+        // Check for overflow
+        if (!isFinite(result)) {
+            throw new Error('Number overflow');
+        }
+
+        const expression = `${prev} ${calculatorState.currentOperator} ${current} = ${result}`;
+        addToHistory(expression);
+        calculatorState.currentInput = result.toString();
+        calculatorState.previousInput = '';
+        calculatorState.currentOperator = null;
+        calculatorState.shouldResetDisplay = true;
+        updateDisplay();
+
+        // Record calculation in DynamoDB
+        recordCalculation(prev, current, calculatorState.currentOperator, result);
+        Logger.info(`Calculation completed: ${expression}`);
     } catch (error) {
-        console.error('Square root error:', error);
-        display.value = "Error";
+        Logger.error('Error calculating result', error);
+        showError(error.message === 'Division by zero' ? ERROR_MESSAGES.DIVIDE_ZERO : ERROR_MESSAGES.MATH);
     }
 }
 
-// Handle power operation with improved validation
-function powerOperation() {
+// Update display with current input
+function updateDisplay() {
     try {
-        const base = parseFloat(display.value);
-        if (isNaN(base)) {
-            throw new Error('Invalid number');
-        }
-        display.value = base + '^';
+        display.textContent = calculatorState.currentInput || '0';
     } catch (error) {
-        console.error('Power operation error:', error);
-        display.value = "Error";
+        Logger.error('Error updating display', error);
     }
 }
 
-// Convert degrees to radians helper function
-function toRadians(degrees) {
-    return degrees * (Math.PI / 180);
-}
-
-// Perform sine operation
-function sinOperation() {
+// Add calculation to history
+function addToHistory(expression) {
     try {
-        const angleInDegrees = parseFloat(display.value);
-        if (isNaN(angleInDegrees)) {
-            throw new Error('Invalid angle');
-        }
-        const radians = toRadians(angleInDegrees);
-        display.value = Math.sin(radians).toFixed(4);
-        recordCalculationInDynamo(angleInDegrees, null, 'sin');
+        const historyEntry = document.createElement('div');
+        historyEntry.textContent = expression;
+        previousCalculations.appendChild(historyEntry);
+        previousCalculations.scrollTop = previousCalculations.scrollHeight;
     } catch (error) {
-        console.error('Sine error:', error);
-        display.value = "Error";
+        Logger.error('Error adding to history', error);
     }
 }
 
-// Perform cosine operation
-function cosOperation() {
+// Show error message
+function showError(message) {
     try {
-        const angleInDegrees = parseFloat(display.value);
-        if (isNaN(angleInDegrees)) {
-            throw new Error('Invalid angle');
-        }
-        const radians = toRadians(angleInDegrees);
-        display.value = Math.cos(radians).toFixed(4);
-        recordCalculationInDynamo(angleInDegrees, null, 'cos');
+        calculatorState.currentInput = message;
+        updateDisplay();
+        calculatorState.shouldResetDisplay = true;
     } catch (error) {
-        console.error('Cosine error:', error);
-        display.value = "Error";
+        Logger.error('Error displaying error message', error);
     }
 }
 
-// Perform tangent operation
-function tanOperation() {
+// Handle keyboard input
+function handleKeyboardInput(event) {
     try {
-        const angleInDegrees = parseFloat(display.value);
-        if (isNaN(angleInDegrees)) {
-            throw new Error('Invalid angle');
+        const key = event.key;
+
+        // Prevent default actions for calculator keys
+        if (/[\d\+\-\*\/\.\=]/.test(key)) {
+            event.preventDefault();
         }
-        const radians = toRadians(angleInDegrees);
-        display.value = Math.tan(radians).toFixed(4);
-        recordCalculationInDynamo(angleInDegrees, null, 'tan');
+
+        // Number keys
+        if (/\d/.test(key)) {
+            handleNumberInput(key);
+        }
+        // Operator keys
+        else if (key === '+' || key === '-' || key === '*' || key === '/') {
+            const operatorMap = {
+                '*': '×',
+                '/': '÷'
+            };
+            handleOperator(operatorMap[key] || key);
+        }
+        // Enter or equals key
+        else if (key === 'Enter' || key === '=') {
+            calculateResult();
+        }
+        // Decimal point
+        else if (key === '.') {
+            handleNumberInput(key);
+        }
+        // Backspace
+        else if (key === 'Backspace') {
+            handleBackspace();
+        }
+        // Escape key (clear)
+        else if (key === 'Escape') {
+            calculatorState.reset();
+            updateDisplay();
+        }
+
+        Logger.info(`Keyboard input processed: ${key}`);
     } catch (error) {
-        console.error('Tangent error:', error);
-        display.value = "Error";
+        Logger.error('Error handling keyboard input', error);
+        showError(ERROR_MESSAGES.INVALID_INPUT);
     }
 }
 
-// Convert Celsius to Fahrenheit
-function celsiusToFahrenheit() {
+// Handle backspace functionality
+function handleBackspace() {
     try {
-        const celsius = parseFloat(display.value);
-        if (isNaN(celsius)) {
-            throw new Error('Invalid temperature');
+        if (calculatorState.currentInput.length > 0) {
+            calculatorState.currentInput = calculatorState.currentInput.slice(0, -1);
+            updateDisplay();
         }
-        const fahrenheit = (celsius * 9 / 5) + 32;
-        display.value = fahrenheit;
-        recordCalculationInDynamo(celsius, null, 'C to F');
     } catch (error) {
-        console.error('Temperature conversion error:', error);
-        display.value = "Error";
+        Logger.error('Error handling backspace', error);
     }
 }
 
-// Convert Fahrenheit to Celsius
-function fahrenheitToCelsius() {
+// Record calculation in DynamoDB
+async function recordCalculation(num1, num2, operation, result) {
     try {
-        const fahrenheit = parseFloat(display.value);
-        if (isNaN(fahrenheit)) {
-            throw new Error('Invalid temperature');
-        }
-        const celsius = (fahrenheit - 32) * 5 / 9;
-        display.value = celsius;
-        recordCalculationInDynamo(fahrenheit, null, 'F to C');
-    } catch (error) {
-        console.error('Temperature conversion error:', error);
-        display.value = "Error";
-    }
-}
+        const response = await fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                num1: num1,
+                num2: num2,
+                operation: operation,
+                result: result
+            })
+        });
 
-// Record calculation in DynamoDB with enhanced error handling and logging
-function recordCalculationInDynamo(num1, num2, operation) {
-    const payload = {
-        num1: num1,
-        num2: num2,
-        operation: operation
-    };
-
-    console.log('Attempting to record calculation:', payload);
-
-    fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    })
-    .then(async response => {
-        console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries([...response.headers]));
-        
-        const responseText = await response.text();
-        console.log('Raw response text:', responseText);
-        
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}, response: ${responseText}`);
+            throw new Error('Failed to record calculation');
         }
-        
-        try {
-            const data = JSON.parse(responseText);
-            console.log('Successfully recorded calculation:', data);
-            return data;
-        } catch (e) {
-            console.error('Error parsing response JSON:', e);
-            throw new Error('Invalid JSON response');
-        }
-    })
-    .catch(error => {
-        console.error('Error recording calculation:', error);
-    });
+
+        Logger.info('Calculation recorded successfully');
+    } catch (error) {
+        Logger.error('Error recording calculation', error);
+        // Don't show error to user as this is non-critical functionality
+    }
 }
