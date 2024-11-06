@@ -74,6 +74,7 @@ class CalculatorState {
         this.waitingForOperand = false;
         this.pendingFunction = null;
         this.openParentheses = 0;
+        this.lastResult = null;
         Logger.info('Calculator state reset');
     }
 
