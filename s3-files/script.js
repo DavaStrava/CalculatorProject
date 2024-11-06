@@ -142,6 +142,16 @@ function initializeCalculator() {
         // Attach keyboard listener
         attachEventListener(document, 'keydown', handleKeyboardInput);
 
+            // Add Clear button handler
+        const clearButton = document.querySelector('button:contains("C"), button[data-function="clear"]');
+        if (clearButton) {
+            attachEventListener(clearButton, 'click', () => {
+                calculatorState.reset();
+                updateDisplay();
+                Logger.info('Calculator cleared');
+            });
+        }
+
         Logger.info('Calculator initialized successfully');
     } catch (error) {
         Logger.error('Failed to initialize calculator', error);
