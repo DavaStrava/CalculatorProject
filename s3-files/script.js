@@ -475,43 +475,28 @@ function handleKeyboardInput(event) {
 }
 
 // Record calculation in DynamoDB
-async function recordCalculation(num1, num2, operation, result) {
-    try {
-        const response = await fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                num1: num1,
-                num2: num2,
-                operation: operation,
-                result: result
-                // ... (after the recordCalculation function)
-
-async function recordCalculation(num1, num2, operation, result) {
-    try {
-        const response = await fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                num1: num1,
-                num2: num2,
-                operation: operation,
-                result: result
-            })
-        });
-
+function recordCalculation(num1, num2, operation, result) {
+    fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            num1: num1,
+            num2: num2,
+            operation: operation,
+            result: result
+        })
+    })
+    .then(response => {
         if (!response.ok) {
             throw new Error('Failed to record calculation');
         }
-
         Logger.info('Calculation recorded successfully');
-    } catch (error) {
+    })
+    .catch(error => {
         Logger.error('Error recording calculation', error);
-    }
+    });
 }
 
 // Add CSS for clickable elements
