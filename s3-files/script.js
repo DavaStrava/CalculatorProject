@@ -487,3 +487,51 @@ async function recordCalculation(num1, num2, operation, result) {
                 num2: num2,
                 operation: operation,
                 result: result
+                // ... (after the recordCalculation function)
+
+async function recordCalculation(num1, num2, operation, result) {
+    try {
+        const response = await fetch('https://927lg8a0al.execute-api.us-west-2.amazonaws.com/default/count_update_calculator', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                num1: num1,
+                num2: num2,
+                operation: operation,
+                result: result
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to record calculation');
+        }
+
+        Logger.info('Calculation recorded successfully');
+    } catch (error) {
+        Logger.error('Error recording calculation', error);
+    }
+}
+
+// Add CSS for clickable elements
+document.addEventListener('DOMContentLoaded', () => {
+    const style = document.createElement('style');
+    style.textContent = `
+        .calculator-buttons, .scientific-functions {
+            user-select: none;
+        }
+        .calculator-buttons > *, .scientific-functions > * {
+            cursor: pointer;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Initialize calculator
+    initializeCalculator();
+});
+
+// Clean up when page is unloaded
+window.addEventListener('beforeunload', () => {
+    calculatorState.cleanup();
+});
