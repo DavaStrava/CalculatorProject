@@ -321,6 +321,29 @@ function handleFunction(func) {
             case 'e':
                 calculatorState.currentInput += Math.E.toString();
                 break;
+            case 'x²':
+                if (calculatorState.currentInput) {
+                    calculatorState.currentInput = Math.pow(parseFloat(calculatorState.currentInput), 2).toString();
+                }
+                break;
+            case '√x':
+                if (calculatorState.currentInput) {
+                    const value = parseFloat(calculatorState.currentInput);
+                    if (value < 0) {
+                        throw new Error('Cannot calculate square root of negative number');
+                    }
+                    calculatorState.currentInput = Math.sqrt(value).toString();
+                }
+                break;
+            case '%':
+                if (calculatorState.currentInput) {
+                    calculatorState.currentInput = (parseFloat(calculatorState.currentInput) / 100).toString();
+                }
+                break;
+            case '(':
+            case ')':
+                calculatorState.currentInput += func;
+                break;
             default:
                 if (FUNCTION_TEMPLATES[func]) {
                     if (calculatorState.currentInput && 
@@ -329,17 +352,10 @@ function handleFunction(func) {
                         calculatorState.currentInput += ' ';
                     }
                     
-                    if (func === 'x²') {
-                        if (calculatorState.currentInput) {
-                            calculatorState.currentInput += FUNCTION_TEMPLATES[func];
-                            calculateFunction();
-                        }
-                    } else {
-                        calculatorState.pendingFunction = func;
-                        calculatorState.currentInput += FUNCTION_TEMPLATES[func];
-                        calculatorState.openParentheses++;
-                        calculatorState.waitingForOperand = true;
-                    }
+                    calculatorState.pendingFunction = func;
+                    calculatorState.currentInput += FUNCTION_TEMPLATES[func];
+                    calculatorState.openParentheses++;
+                    calculatorState.waitingForOperand = true;
                 }
         }
         updateDisplay();
