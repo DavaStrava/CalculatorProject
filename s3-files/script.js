@@ -33,12 +33,12 @@ const FUNCTION_TEMPLATES = {
 const Logger = {
     error: function(message, error) {
         if (DEBUG) {
-            console.error(`[Calculator Error]: ${message}`, error);
+            console.error(message, error);
         }
     },
     info: function(message) {
         if (DEBUG) {
-            console.info(`[Calculator Info]: ${message}`);
+            console.info(message);
         }
     },
     warn: function(message) {
@@ -92,28 +92,34 @@ let previousCalculations;
 // Attach events to text nodes
 function attachEventListener(element, eventType, handler) {
     if (typeof element === 'string') {
-        const walker = document.createTreeWalker(
-            document.querySelector('.calculator-card'),
-            NodeFilter.SHOW_TEXT,
-            {
-                acceptNode: function(node) {
-                    return node.textContent.trim() === element.trim() ?
-                        NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-                }
-            }
-        );
-
-        let node;
-        while (node = walker.nextNode()) {
-            const parent = node.parentElement;
+        // Find the text node containing this content
+        const xpath = `//text()[normalize-space(.)='${element}']`;
+        const textNodes = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        
+        for (let i = 0; i < textNodes.snapshotLength; i++) {
+            const textNode = textNodes.snapshotItem(i);
+            const parent = textNode.parentElement;
+            
             if (parent) {
-                parent.style.cursor = 'pointer';
+                console.log('Attaching listener to:', element); // Debug log
+                
+                // Create a button wrapper if it doesn't exist
+                let buttonWrapper = parent;
+                if (parent.nodeName !== 'BUTTON') {
+                    buttonWrapper = document.createElement('button');
+                    buttonWrapper.className = 'calculator-button';
+                    buttonWrapper.textContent = element;
+                    parent.replaceChild(buttonWrapper, textNode);
+                }
+                
                 const clickHandler = (e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     handler();
                 };
-                parent.addEventListener(eventType, clickHandler);
-                calculatorState.eventListeners.set(parent, clickHandler);
+                
+                buttonWrapper.addEventListener(eventType, clickHandler);
+                calculatorState.eventListeners.set(buttonWrapper, clickHandler);
             }
         }
     } else {
@@ -132,20 +138,42 @@ function initializeCalculator() {
         // Process calculator buttons
         const calculatorButtons = document.querySelector('.calculator-buttons');
         if (calculatorButtons) {
-            const buttons = calculatorButtons.textContent.trim().split('\n\n');
+            // Split by any combination of newlines and remove empty strings
+            const buttons = calculatorButtons.innerText
+                .split(/[\n\r]+/)
+                .map(btn => btn.trim())
+                .filter(btn => btn !== '');
+
+            console.log('Found buttons:', buttons); // Debug log
+
             buttons.forEach(buttonText => {
-                buttonText = buttonText.trim();
                 if (buttonText) {
+                    console.log('Processing button:', buttonText); // Debug log
                     if ('0123456789.'.includes(buttonText)) {
-                        attachEventListener(buttonText, 'click', () => handleNumberInput(buttonText));
+                        attachEventListener(buttonText, 'click', () => {
+                            console.log('Number clicked:', buttonText); // Debug log
+                            handleNumberInput(buttonText);
+                        });
                     } else if ('+-×÷'.includes(buttonText)) {
-                        attachEventListener(buttonText, 'click', () => handleOperator(buttonText));
+                        attachEventListener(buttonText, 'click', () => {
+                            console.log('Operator clicked:', buttonText); // Debug log
+                            handleOperator(buttonText);
+                        });
                     } else if (buttonText === 'C') {
-                        attachEventListener(buttonText, 'click', handleClear);
+                        attachEventListener(buttonText, 'click', () => {
+                            console.log('Clear clicked'); // Debug log
+                            handleClear();
+                        });
                     } else if (buttonText === '=') {
-                        attachEventListener(buttonText, 'click', calculateResult);
+                        attachEventListener(buttonText, 'click', () => {
+                            console.log('Equals clicked'); // Debug log
+                            calculateResult();
+                        });
                     } else {
-                        attachEventListener(buttonText, 'click', () => handleFunction(buttonText));
+                        attachEventListener(buttonText, 'click', () => {
+                            console.log('Function clicked:', buttonText); // Debug log
+                            handleFunction(buttonText);
+                        });
                     }
                 }
             });
@@ -154,10 +182,16 @@ function initializeCalculator() {
         // Process scientific functions
         const scientificFunctions = document.querySelector('.scientific-functions');
         if (scientificFunctions) {
-            const functions = scientificFunctions.textContent.trim().split('\n\n');
+            const functions = scientificFunctions.innerText
+                .split(/[\n\r]+/)
+                .map(func => func.trim())
+                .filter(func => func !== '');
+
+            console.log('Found scientific functions:', functions); // Debug log
+
             functions.forEach(funcText => {
-                funcText = funcText.trim();
                 if (funcText) {
+                    console.log('Processing function:', funcText); // Debug log
                     attachEventListener(funcText, 'click', () => handleFunction(funcText));
                 }
             });
@@ -172,6 +206,25 @@ function initializeCalculator() {
             const radDeg = angleMode.textContent.includes('RAD') ? 'rad' : 'deg';
             calculatorState.isRadianMode = radDeg === 'rad';
         }
+
+        // Add visual feedback styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .calculator-buttons > *, .scientific-functions > * {
+                cursor: pointer;
+                padding: 8px;
+                margin: 4px;
+                border-radius: 4px;
+                transition: background-color 0.2s;
+            }
+            .calculator-buttons > *:hover, .scientific-functions > *:hover {
+                background-color: #e5e7eb;
+            }
+            .calculator-buttons > *:active, .scientific-functions > *:active {
+                background-color: #d1d5db;
+            }
+        `;
+        document.head.appendChild(style);
 
         Logger.info('Calculator initialized successfully');
     } catch (error) {
@@ -351,7 +404,7 @@ function calculateFunction() {
         updateDisplay();
 
     } catch (error) {
-        Logger.error('Error calculating function', error);
+        Logger.error(`Error in function ${func}`, error);
         showError(ERROR_MESSAGES.MATH);
     }
 }
