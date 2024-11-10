@@ -643,7 +643,7 @@ function initializeTrigMode() {
     });
 
     // Angle mode toggle handler
-    document.getElementById('angleMode').addEventListener('change', (e) => {
+    document.getElementById('angleModeSelect').addEventListener('change', (e) => {
         calculatorState.isRadianMode = e.target.value === 'rad';
         updateAngleModeIndicator();
     });
