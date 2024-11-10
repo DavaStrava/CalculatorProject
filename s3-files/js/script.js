@@ -545,7 +545,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize calculator
     initializeCalculator();
-    initializeTrigMode();
     initializeFunctionTabs();
 });
 
@@ -629,6 +628,7 @@ function buildTrigLayout(layout) {
             calculatorButtons.appendChild(button);
         });
     });
+    initializeTrigMode(); // Ensure event listeners are attached after building the layout
 }
 
 // Function to update the help text
