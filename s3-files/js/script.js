@@ -590,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Clean up when page is unloaded
-window.addEventListener('beforeunload', () => {
+window.addEventListener('pagehide', () => {
     calculatorState.cleanup();
 });
 
