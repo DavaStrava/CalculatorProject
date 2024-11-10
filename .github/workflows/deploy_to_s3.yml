@@ -3,33 +3,26 @@ name: Sync S3 Files
 on:
   push:
     branches:
-      - main  # Run this action on pushes to the main branch
+      - main
     paths:
-      - 's3-files/**'  # Trigger only when files in the s3-files directory change
+      - 's3-files/**'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out the code from the repository
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Step 2: Set up AWS credentials using GitHub secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2  # Change this to your region if different
+          aws-region: us-west-2
 
-      # Step 3: Sync JS files to the js/ folder
-      - name: Sync JS Files
+      # Single sync command that maintains directory structure
+      - name: Sync Files to S3
         run: |
-          aws s3 sync s3-files/ s3://xaiproject.net/js/ --exclude "*" --include "*.js" --delete
-
-      # Step 4: Sync all other files to root, excluding JS files
-      - name: Sync Non-JS Files
-        run: |
-          aws s3 sync s3-files/ s3://xaiproject.net/ --exclude "*.js" --exclude ".git/*" --delete
+          aws s3 sync s3-files/ s3://xaiproject.net/ --exclude ".git/*" --delete
