@@ -139,48 +139,7 @@ function initializeCalculator() {
         previousCalculations = document.querySelector('.calculator-display .previous-calculations');
 
         // Process calculator buttons
-        const calculatorButtons = document.querySelector('.calculator-buttons');
-        if (calculatorButtons) {
-            // Split by any combination of newlines and remove empty strings
-            const buttons = calculatorButtons.innerText
-                .split(/[\n\r]+/)
-                .map(btn => btn.trim())
-                .filter(btn => btn !== '');
-
-            console.log('Found buttons:', buttons); // Debug log
-
-            buttons.forEach(buttonText => {
-                if (buttonText) {
-                    console.log('Processing button:', buttonText); // Debug log
-                    if ('0123456789.'.includes(buttonText)) {
-                        attachEventListener(buttonText, 'click', () => {
-                            console.log('Number clicked:', buttonText); // Debug log
-                            handleNumberInput(buttonText);
-                        });
-                    } else if ('+-×÷'.includes(buttonText)) {
-                        attachEventListener(buttonText, 'click', () => {
-                            console.log('Operator clicked:', buttonText); // Debug log
-                            handleOperator(buttonText);
-                        });
-                    } else if (buttonText === 'C') {
-                        attachEventListener(buttonText, 'click', () => {
-                            console.log('Clear clicked'); // Debug log
-                            handleClear();
-                        });
-                    } else if (buttonText === '=') {
-                        attachEventListener(buttonText, 'click', () => {
-                            console.log('Equals clicked'); // Debug log
-                            calculateResult();
-                        });
-                    } else {
-                        attachEventListener(buttonText, 'click', () => {
-                            console.log('Function clicked:', buttonText); // Debug log
-                            handleFunction(buttonText);
-                        });
-                    }
-                }
-            });
-        }
+        buildBasicLayout();
 
         // Process scientific functions
         const scientificFunctions = document.querySelector('.scientific-functions');
@@ -690,6 +649,58 @@ function showAngleModeSelector() {
     angleModeSelector.style.display = 'block';
 }
 
+// Function to hide the angle mode selector
+function hideAngleModeSelector() {
+    const angleModeSelector = document.querySelector('.angle-mode-selector');
+    angleModeSelector.style.display = 'none';
+}
+
+// Function to build the basic layout
+function buildBasicLayout() {
+    const calculatorButtons = document.querySelector('.calculator-buttons');
+    const basicLayout = [
+        ['(', ')', '%', 'C'],
+        ['7', '8', '9', '÷'],
+        ['4', '5', '6', '×'],
+        ['1', '2', '3', '-'],
+        ['0', '.', '=', '+']
+    ];
+    basicLayout.forEach(row => {
+        row.forEach(buttonText => {
+            const button = document.createElement('button');
+            button.className = 'function-button';
+            button.textContent = buttonText;
+            calculatorButtons.appendChild(button);
+            if ('0123456789.'.includes(buttonText)) {
+                attachEventListener(button, 'click', () => handleNumberInput(buttonText));
+            } else if ('+-×÷'.includes(buttonText)) {
+                attachEventListener(button, 'click', () => handleOperator(buttonText));
+            } else if (buttonText === 'C') {
+                attachEventListener(button, 'click', handleClear);
+            } else if (buttonText === '=') {
+                attachEventListener(button, 'click', calculateResult);
+            } else {
+                attachEventListener(button, 'click', () => handleFunction(buttonText));
+            }
+        });
+    });
+}
+
+// Function to switch to basic mode
+function switchToBasicMode() {
+    // Clear current layout
+    clearCalculatorLayout();
+    
+    // Remove trig mode styles
+    document.querySelector('.calculator-card').classList.remove('trig-mode');
+    
+    // Build basic layout
+    buildBasicLayout();
+    
+    // Hide angle mode selector
+    hideAngleModeSelector();
+}
+
 // Initialize function tabs
 function initializeFunctionTabs() {
     const tabs = document.querySelectorAll('.function-tabs .tab-button');
@@ -699,6 +710,8 @@ function initializeFunctionTabs() {
             e.target.classList.add('active');
             if (e.target.textContent === 'Trigonometry') {
                 switchToTrigMode();
+            } else if (e.target.textContent === 'Basic') {
+                switchToBasicMode();
             } else {
                 // Handle other modes if necessary
             }
