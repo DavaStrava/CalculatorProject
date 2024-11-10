@@ -587,6 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize calculator
     initializeCalculator();
     initializeTrigMode();
+    initializeFunctionTabs();
 });
 
 // Clean up when page is unloaded
@@ -646,5 +647,61 @@ function initializeTrigMode() {
     document.getElementById('angleModeSelect').addEventListener('change', (e) => {
         calculatorState.isRadianMode = e.target.value === 'rad';
         updateAngleModeIndicator();
+    });
+}
+
+// Function to clear the current calculator layout
+function clearCalculatorLayout() {
+    const calculatorButtons = document.querySelector('.calculator-buttons');
+    const scientificFunctions = document.querySelector('.scientific-functions');
+    calculatorButtons.innerHTML = '';
+    scientificFunctions.innerHTML = '';
+}
+
+// Function to build the trigonometry layout
+function buildTrigLayout(layout) {
+    const calculatorButtons = document.querySelector('.calculator-buttons');
+    layout.forEach(row => {
+        row.forEach(buttonText => {
+            const button = document.createElement('button');
+            button.className = 'function-button trig-function';
+            button.textContent = buttonText;
+            button.dataset.function = buttonText;
+            calculatorButtons.appendChild(button);
+        });
+    });
+}
+
+// Function to update the help text
+function updateHelpText(helpText) {
+    const helpPanel = document.querySelector('.trig-help-panel');
+    helpPanel.innerHTML = '';
+    for (const [func, text] of Object.entries(helpText)) {
+        const helpItem = document.createElement('div');
+        helpItem.className = 'help-item';
+        helpItem.innerHTML = `<strong>${func}:</strong> ${text}`;
+        helpPanel.appendChild(helpItem);
+    }
+}
+
+// Function to show the angle mode selector
+function showAngleModeSelector() {
+    const angleModeSelector = document.querySelector('.angle-mode-selector');
+    angleModeSelector.style.display = 'block';
+}
+
+// Initialize function tabs
+function initializeFunctionTabs() {
+    const tabs = document.querySelectorAll('.function-tabs .tab-button');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            tabs.forEach(t => t.classList.remove('active'));
+            e.target.classList.add('active');
+            if (e.target.textContent === 'Trigonometry') {
+                switchToTrigMode();
+            } else {
+                // Handle other modes if necessary
+            }
+        });
     });
 }
