@@ -1,0 +1,24 @@
+/* Trig mode specific styles */
+.trig-mode .calculator-buttons {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.trig-mode .function-button {
+    background-color: #dbeafe;
+    color: #1e40af;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.trig-mode .angle-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    background-color: #eff6ff;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Add more specific styles */
