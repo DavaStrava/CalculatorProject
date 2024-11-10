@@ -1,3 +1,6 @@
+import { TRIG_MODE_CONFIG } from './modes/trigMode.js';
+import { trigCalculations, trigValidation } from './utils/trigCalculations.js';
+
 // script.js
 
 // Constants for configuration and error messages
@@ -583,9 +586,65 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize calculator
     initializeCalculator();
+    initializeTrigMode();
 });
 
 // Clean up when page is unloaded
 window.addEventListener('beforeunload', () => {
     calculatorState.cleanup();
 });
+
+function handleTrigFunction(func, value) {
+    try {
+        // Validate input
+        if (!trigValidation.validateDomain(func, value)) {
+            throw new Error('Input out of domain');
+        }
+
+        // Perform calculation
+        const result = trigCalculations[func](
+            parseFloat(value), 
+            calculatorState.isRadianMode
+        );
+
+        // Update display and history
+        addToHistory(`${func}(${value}) = ${result}`);
+        updateDisplay(result);
+
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+function switchToTrigMode() {
+    // Clear current layout
+    clearCalculatorLayout();
+    
+    // Apply trig mode styles
+    document.querySelector('.calculator-card').classList.add('trig-mode');
+    
+    // Build trig mode layout
+    buildTrigLayout(TRIG_MODE_CONFIG.layout);
+    
+    // Update help text
+    updateHelpText(TRIG_MODE_CONFIG.helpText);
+    
+    // Show angle mode selector
+    showAngleModeSelector();
+}
+
+function initializeTrigMode() {
+    // Attach event listeners for trig functions
+    document.querySelectorAll('.trig-function').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const func = e.target.dataset.function;
+            handleTrigFunction(func, calculatorState.currentInput);
+        });
+    });
+
+    // Angle mode toggle handler
+    document.getElementById('angleMode').addEventListener('change', (e) => {
+        calculatorState.isRadianMode = e.target.value === 'rad';
+        updateAngleModeIndicator();
+    });
+}
