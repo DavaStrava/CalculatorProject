@@ -697,6 +697,9 @@ function switchToBasicMode() {
     // Build basic layout
     buildBasicLayout();
     
+    // Rebuild scientific functions
+    buildScientificFunctions();
+    
     // Hide angle mode selector
     hideAngleModeSelector();
 }
