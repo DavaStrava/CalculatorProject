@@ -1,0 +1,8 @@
+.statistics-mode .function-button {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.statistics-mode .function-button:hover {
+    background-color: #bbdefb;
+}

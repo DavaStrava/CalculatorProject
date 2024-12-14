@@ -745,3 +745,57 @@ function buildScientificFunctions() {
         attachEventListener(button, 'click', () => handleFunction(funcText));
     });
 }
+
+function handleCalculusFunction(func) {
+    try {
+        switch(func) {
+            case '∫':
+                // Handle indefinite integration
+                break;
+            case '∂/∂x':
+                // Handle partial derivative
+                break;
+            // Add cases for other calculus functions
+            default:
+                throw new Error('Function not implemented');
+        }
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+function handleStatisticsFunction(func) {
+    try {
+        switch(func) {
+            case 'x̄':
+                // Handle mean calculation
+                break;
+            case 'σ':
+                // Handle standard deviation
+                break;
+            // Add cases for other statistics functions
+            default:
+                throw new Error('Function not implemented');
+        }
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+function handleMatricesFunction(func) {
+    try {
+        switch(func) {
+            case '[A]':
+                // Handle matrix input
+                break;
+            case 'det':
+                // Handle determinant calculation
+                break;
+            // Add cases for other matrix functions
+            default:
+                throw new Error('Function not implemented');
+        }
+    } catch (error) {
+        handleError(error);
+    }
+}

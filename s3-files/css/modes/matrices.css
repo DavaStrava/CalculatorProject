@@ -1,0 +1,8 @@
+.matrices-mode .function-button {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.matrices-mode .function-button:hover {
+    background-color: #e1bee7;
+}
