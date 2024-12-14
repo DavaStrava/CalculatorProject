@@ -545,6 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize calculator
     initializeCalculator();
+    buildScientificFunctions();
     initializeFunctionTabs();
 });
 
@@ -719,5 +720,28 @@ function initializeFunctionTabs() {
                 // Handle other modes if necessary
             }
         });
+    });
+}
+
+// First, let's define buildScientificFunctions BEFORE it's used
+// Add this near the top of your file, after your initial constants and before other function definitions
+
+function buildScientificFunctions() {
+    const scientificFunctions = document.querySelector('.scientific-functions');
+    
+    // Clear existing content first
+    scientificFunctions.innerHTML = '';
+    
+    const functions = [
+        'π', 'e', 'x²', '√x',
+        'sin', 'cos', 'tan', 'log'
+    ];
+    
+    functions.forEach(funcText => {
+        const button = document.createElement('button');
+        button.className = 'function-button';
+        button.textContent = funcText;
+        scientificFunctions.appendChild(button);
+        attachEventListener(button, 'click', () => handleFunction(funcText));
     });
 }
