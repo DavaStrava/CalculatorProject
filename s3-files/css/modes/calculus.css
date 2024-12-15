@@ -1,8 +1,32 @@
+/* Calculus Mode Specific Styles */
 .calculus-mode .function-button {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: #e8f5e9;  /* Light green background */
+    color: #2e7d32;            /* Darker green text */
+    border: 1px solid #a5d6a7; /* Medium green border */
+    transition: all 0.2s ease;
 }
 
 .calculus-mode .function-button:hover {
     background-color: #c8e6c9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.calculus-mode .function-button:active {
+    transform: translateY(1px);
+}
+
+/* Calculus specific display styles */
+.calculus-mode .calculator-display {
+    font-family: 'Times New Roman', serif; /* Better for mathematical notation */
+    border-left: 3px solid #2e7d32;
+}
+
+/* Help panel styles for calculus mode */
+.calculus-mode .help-panel {
+    background-color: #f1f8e9;
+    border: 1px solid #c8e6c9;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 4px;
 }

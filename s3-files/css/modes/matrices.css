@@ -1,8 +1,38 @@
 .matrices-mode .function-button {
     background-color: #f3e5f5;
     color: #7b1fa2;
+    border: 1px solid #ce93d8;
+    transition: all 0.2s ease;
 }
 
 .matrices-mode .function-button:hover {
     background-color: #e1bee7;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.matrices-mode .function-button:active {
+    transform: translateY(1px);
+}
+
+.matrices-mode .calculator-display {
+    font-family: 'Consolas', monospace;
+    border-left: 3px solid #7b1fa2;
+}
+
+.matrices-mode .help-panel {
+    background-color: #f3e5f5;
+    border: 1px solid #e1bee7;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 4px;
+}
+
+.matrices-mode .matrix-grid {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background-color: #fff;
+    border-radius: 4px;
+    margin: 0.5rem 0;
 }
