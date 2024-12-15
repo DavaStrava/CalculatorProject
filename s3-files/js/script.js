@@ -1,4 +1,7 @@
 import { TRIG_MODE_CONFIG } from './modes/trigMode.js';
+import { CALCULUS_MODE_CONFIG } from './modes/calculusMode.js';
+import { STATISTICS_MODE_CONFIG } from './modes/statisticsMode.js';
+import { MATRICES_MODE_CONFIG } from './modes/matricesMode.js';
 import { trigCalculations, trigValidation } from './utils/trigCalculations.js';
 
 // script.js
@@ -798,31 +801,4 @@ function handleMatricesFunction(func) {
     } catch (error) {
         handleError(error);
     }
-}
-
-function switchToCalculusMode() {
-    console.log('Switching to Calculus mode');
-    clearCalculatorLayout();
-    const calculatorCard = document.querySelector('.calculator-card');
-    calculatorCard.classList.add('calculus-mode');
-    buildCalculusLayout(CALCULUS_MODE_CONFIG.layout);
-    updateHelpText(CALCULUS_MODE_CONFIG.helpText);
-}
-
-function switchToStatisticsMode() {
-    console.log('Switching to Statistics mode');
-    clearCalculatorLayout();
-    const calculatorCard = document.querySelector('.calculator-card');
-    calculatorCard.classList.add('statistics-mode');
-    buildStatisticsLayout(STATISTICS_MODE_CONFIG.layout);
-    updateHelpText(STATISTICS_MODE_CONFIG.helpText);
-}
-
-function switchToMatricesMode() {
-    console.log('Switching to Matrices mode');
-    clearCalculatorLayout();
-    const calculatorCard = document.querySelector('.calculator-card');
-    calculatorCard.classList.add('matrices-mode');
-    buildMatricesLayout(MATRICES_MODE_CONFIG.layout);
-    updateHelpText(MATRICES_MODE_CONFIG.helpText);
 }
