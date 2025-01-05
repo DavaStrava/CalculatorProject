@@ -719,8 +719,12 @@ function initializeFunctionTabs() {
                 switchToTrigMode();
             } else if (e.target.textContent === 'Basic') {
                 switchToBasicMode();
-            } else {
-                // Handle other modes if necessary
+            } else if (e.target.textContent === 'Calculus') {
+                switchToCalculusMode();
+            } else if (e.target.textContent === 'Statistics') {
+                switchToStatisticsMode();
+            } else if (e.target.textContent === 'Matrices') {
+                switchToMatricesMode();
             }
         });
     });
@@ -801,4 +805,67 @@ function handleMatricesFunction(func) {
     } catch (error) {
         handleError(error);
     }
+}
+
+function buildCalculusLayout(layout) {
+    const calculatorButtons = document.querySelector('.calculator-buttons');
+    layout.forEach(row => {
+        row.forEach(buttonText => {
+            const button = document.createElement('button');
+            button.className = 'function-button calculus-function';
+            button.textContent = buttonText;
+            button.dataset.function = buttonText;
+            calculatorButtons.appendChild(button);
+        });
+    });
+    initializeCalculusMode();
+}
+
+function buildStatisticsLayout(layout) {
+    const calculatorButtons = document.querySelector('.calculator-buttons');
+    layout.forEach(row => {
+        row.forEach(buttonText => {
+            const button = document.createElement('button');
+            button.className = 'function-button statistics-function';
+            button.textContent = buttonText;
+            button.dataset.function = buttonText;
+            calculatorButtons.appendChild(button);
+        });
+    });
+    initializeStatisticsMode();
+}
+
+function buildMatricesLayout(layout) {
+    const calculatorButtons = document.querySelector('.calculator-buttons');
+    layout.forEach(row => {
+        row.forEach(buttonText => {
+            const button = document.createElement('button');
+            button.className = 'function-button matrices-function';
+            button.textContent = buttonText;
+            button.dataset.function = buttonText;
+            calculatorButtons.appendChild(button);
+        });
+    });
+    initializeMatricesMode();
+}
+
+function switchToCalculusMode() {
+    clearCalculatorLayout();
+    document.querySelector('.calculator-card').classList.add('calculus-mode');
+    buildCalculusLayout(CALCULUS_MODE_CONFIG.layout);
+    updateHelpText(CALCULUS_MODE_CONFIG.helpText);
+}
+
+function switchToStatisticsMode() {
+    clearCalculatorLayout();
+    document.querySelector('.calculator-card').classList.add('statistics-mode');
+    buildStatisticsLayout(STATISTICS_MODE_CONFIG.layout);
+    updateHelpText(STATISTICS_MODE_CONFIG.helpText);
+}
+
+function switchToMatricesMode() {
+    clearCalculatorLayout();
+    document.querySelector('.calculator-card').classList.add('matrices-mode');
+    buildMatricesLayout(MATRICES_MODE_CONFIG.layout);
+    updateHelpText(MATRICES_MODE_CONFIG.helpText);
 }
